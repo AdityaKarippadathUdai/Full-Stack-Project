@@ -3,68 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Library Management System — manage, borrow and return books with ease.">
-  <title>{% block title %}Library Management System{% endblock %}</title>
+  <meta name="description" content="Smart Library — a modern library management system to browse, borrow, and manage books with ease.">
+  <title>{% block title %}Smart Library — Library Management System{% endblock %}</title>
 
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Google Fonts — Inter for a clean modern feel -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Custom CSS -->
   <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+  {% block head %}{% endblock %}
 </head>
-<body>
 
-  <!-- ==================== NAVBAR ==================== -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-      <a class="navbar-brand" href="{{ url_for('index') }}">
-        <i class="bi bi-book-half me-2"></i>LibraHub
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-              data-bs-target="#mainNav" aria-controls="mainNav"
-              aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+<body class="d-flex flex-column min-vh-100">
 
-      <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('index') }}">
-              <i class="bi bi-house-door me-1"></i>Home
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'books' %}active{% endif %}" href="{{ url_for('index') }}#books">
-              <i class="bi bi-journal-bookmark me-1"></i>Books
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'my_books' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-              <i class="bi bi-collection me-1"></i>My Books
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
-              <i class="bi bi-box-arrow-in-right me-1"></i>Login
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'register' %}active{% endif %}" href="{{ url_for('register') }}">
-              <i class="bi bi-person-plus me-1"></i>Register
-            </a>
-          </li>
-          <li class="nav-item ms-lg-2">
-            <a class="btn btn-accent {% if active_page == 'admin' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
-              <i class="bi bi-shield-lock me-1"></i>Admin
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <!-- ===================== HEADER / NAVBAR ===================== -->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background: linear-gradient(135deg, #2c3e6b 0%, #3b5998 100%);">
+      <div class="container">
 
-  <!-- ==================== FLASH MESSAGES ==================== -->
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center fw-bold" href="{{ url_for('index') }}">
+          <i class="bi bi-book-half me-2 fs-4"></i>
+          <span>Smart Library</span>
+        </a>
+
+        <!-- Mobile toggler -->
+        <button class="navbar-toggler border-0" type="button"
+                data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false"
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Collapsible links -->
+        <div class="collapse navbar-collapse" id="mainNav">
+
+          <!-- Left / center links -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('index') }}">
+                <i class="bi bi-house-door me-1"></i>Home
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == 'books' %}active{% endif %}" href="{{ url_for('index') }}#books">
+                <i class="bi bi-journal-bookmark me-1"></i>Books
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == 'my_books' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                <i class="bi bi-collection me-1"></i>My Books
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == 'admin' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
+                <i class="bi bi-shield-lock me-1"></i>Admin
+              </a>
+            </li>
+          </ul>
+
+          <!-- Right‑side auth links -->
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-1">
+            <li class="nav-item">
+              <a class="nav-link {% if active_page == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-light btn-sm ms-lg-2 px-3 {% if active_page == 'register' %}active{% endif %}"
+                 href="{{ url_for('register') }}">
+                <i class="bi bi-person-plus me-1"></i>Register
+              </a>
+            </li>
+          </ul>
+
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container -->
+    </nav>
+  </header>
+
+  <!-- ===================== FLASH MESSAGES ===================== -->
   <div class="container mt-3">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -78,34 +100,51 @@
     {% endwith %}
   </div>
 
-  <!-- ==================== MAIN CONTENT ==================== -->
-  <main>
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <main class="container mt-4 flex-grow-1">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- ==================== FOOTER ==================== -->
-  <footer class="mt-auto">
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="mt-auto py-4" style="background: linear-gradient(135deg, #2c3e6b 0%, #3b5998 100%); color: #d4dce8;">
     <div class="container">
-      <div class="row align-items-center">
-        <div class="col-md-6 text-center text-md-start">
-          &copy; {{ current_year | default('2026') }} <strong>LibraHub</strong>. All rights reserved.
+      <div class="row gy-3 align-items-center">
+
+        <!-- Copyright -->
+        <div class="col-md-4 text-center text-md-start">
+          <h6 class="text-white mb-1">
+            <i class="bi bi-book-half me-1"></i>Smart Library
+          </h6>
+          <small>&copy; {{ current_year | default('2026') }} Smart Library. All rights reserved.</small>
         </div>
-        <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
-          <a href="#" class="me-3"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="me-3"><i class="bi bi-twitter-x"></i></a>
-          <a href="#"><i class="bi bi-github"></i></a>
+
+        <!-- Contact info -->
+        <div class="col-md-4 text-center">
+          <small class="d-block"><i class="bi bi-envelope me-1"></i>contact@smartlibrary.edu</small>
+          <small class="d-block"><i class="bi bi-telephone me-1"></i>+1 (555) 234‑5678</small>
+          <small class="d-block"><i class="bi bi-geo-alt me-1"></i>123 Academic Ave, Knowledge City</small>
         </div>
+
+        <!-- Library quote -->
+        <div class="col-md-4 text-center text-md-end">
+          <em class="small text-light fst-italic">
+            "A library is not a luxury but one of the necessities of life."
+          </em>
+          <small class="d-block text-light mt-1">— Henry Ward Beecher</small>
+        </div>
+
       </div>
     </div>
   </footer>
 
-  <!-- ==================== SCRIPTS ==================== -->
-  <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- jQuery -->
+  <!-- ===================== SCRIPTS ===================== -->
+  <!-- jQuery (loaded first for plugin compatibility) -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- Bootstrap 5 JS Bundle (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Custom JS -->
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
   {% block scripts %}{% endblock %}
 </body>
 </html>
