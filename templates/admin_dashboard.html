@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+{% set active_page = 'admin' %}
+
+{% block title %}Admin Dashboard — LibraHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- ===== Header ===== -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="section-title mb-0">
+        <i class="bi bi-shield-lock me-2"></i>Admin Dashboard
+      </h2>
+      <p class="text-muted mt-3">Manage your library's catalogue and members.</p>
+    </div>
+  </div>
+
+  <!-- ===== Stats Row ===== -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card stat-card p-4 text-center">
+        <div class="stat-number">{{ total_books | default('1,245') }}</div>
+        <div class="stat-label">Total Books</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card stat-card p-4 text-center">
+        <div class="stat-number">{{ total_issued | default('328') }}</div>
+        <div class="stat-label">Currently Issued</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card stat-card p-4 text-center">
+        <div class="stat-number text-danger">{{ total_overdue | default('17') }}</div>
+        <div class="stat-label">Overdue Returns</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Add New Book ===== -->
+  <div class="card shadow-sm mb-5">
+    <div class="card-header bg-white py-3">
+      <h5 class="mb-0 fw-bold" style="color:var(--primary)">
+        <i class="bi bi-plus-circle me-1"></i>Add New Book
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <form id="addBookForm" method="POST" action="{{ url_for('admin_dashboard') }}" novalidate>
+        <div class="row g-3">
+          <!-- Title -->
+          <div class="col-md-6">
+            <label for="bookTitle" class="form-label">Book Title</label>
+            <input type="text" class="form-control" id="bookTitle" name="title"
+                   placeholder="e.g. Introduction to Algorithms" required>
+            <div class="invalid-feedback"></div>
+          </div>
+          <!-- Author -->
+          <div class="col-md-6">
+            <label for="bookAuthor" class="form-label">Author</label>
+            <input type="text" class="form-control" id="bookAuthor" name="author"
+                   placeholder="e.g. Thomas H. Cormen" required>
+            <div class="invalid-feedback"></div>
+          </div>
+          <!-- ISBN -->
+          <div class="col-md-6">
+            <label for="bookISBN" class="form-label">ISBN</label>
+            <input type="text" class="form-control" id="bookISBN" name="isbn"
+                   placeholder="e.g. 978-0-262-03384-8" required>
+            <div class="invalid-feedback"></div>
+          </div>
+          <!-- Quantity -->
+          <div class="col-md-3">
+            <label for="bookQty" class="form-label">Quantity</label>
+            <input type="number" class="form-control" id="bookQty" name="quantity"
+                   min="1" value="1" required>
+            <div class="invalid-feedback"></div>
+          </div>
+          <!-- Category -->
+          <div class="col-md-3">
+            <label for="bookCategory" class="form-label">Category</label>
+            <select class="form-select" id="bookCategory" name="category">
+              <option value="general">General</option>
+              <option value="science">Science</option>
+              <option value="technology">Technology</option>
+              <option value="literature">Literature</option>
+              <option value="history">History</option>
+              <option value="arts">Arts</option>
+            </select>
+          </div>
+          <!-- Submit -->
+          <div class="col-12">
+            <button type="submit" class="btn btn-accent-custom">
+              <i class="bi bi-plus-lg me-1"></i>Add Book
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== All Books Table ===== -->
+  <h4 class="fw-bold mb-3" style="color:var(--primary)">
+    <i class="bi bi-journal-text me-1"></i>All Books
+  </h4>
+
+  <div class="table-container mb-5">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="allBooksTable">
+        <thead>
+          <tr>
+            <th data-sort="id"># <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="title">Title <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="author">Author <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="isbn">ISBN <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="qty">Qty <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for book in books %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td><code>{{ book.isbn }}</code></td>
+            <td>{{ book.quantity }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger btn-remove-book"
+                      data-bs-toggle="tooltip" title="Remove book">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if not books %}
+          <!-- Sample rows -->
+          <tr>
+            <td>1</td>
+            <td>Introduction to Algorithms</td>
+            <td>Thomas H. Cormen</td>
+            <td><code>978-0-262-03384-8</code></td>
+            <td>5</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger btn-remove-book"
+                      data-bs-toggle="tooltip" title="Remove book">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Clean Code</td>
+            <td>Robert C. Martin</td>
+            <td><code>978-0-132-35088-4</code></td>
+            <td>3</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger btn-remove-book"
+                      data-bs-toggle="tooltip" title="Remove book">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Design Patterns</td>
+            <td>Erich Gamma et al.</td>
+            <td><code>978-0-201-63361-0</code></td>
+            <td>2</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger btn-remove-book"
+                      data-bs-toggle="tooltip" title="Remove book">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>The Pragmatic Programmer</td>
+            <td>David Thomas</td>
+            <td><code>978-0-135-95705-9</code></td>
+            <td>4</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger btn-remove-book"
+                      data-bs-toggle="tooltip" title="Remove book">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Artificial Intelligence: A Modern Approach</td>
+            <td>Stuart Russell</td>
+            <td><code>978-0-134-61099-3</code></td>
+            <td>6</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger btn-remove-book"
+                      data-bs-toggle="tooltip" title="Remove book">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mb-5" aria-label="All books pagination">
+    <ul class="pagination justify-content-center">
+      <li class="page-item disabled"><a class="page-link" href="#">&laquo; Prev</a></li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">3</a></li>
+      <li class="page-item"><a class="page-link" href="#">Next &raquo;</a></li>
+    </ul>
+  </nav>
+
+  <!-- ===== Borrowed Books / Reminders ===== -->
+  <h4 class="fw-bold mb-3" style="color:var(--primary)">
+    <i class="bi bi-clock-history me-1"></i>Borrowed Books &amp; Reminders
+  </h4>
+
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="borrowedBooksTable">
+        <thead>
+          <tr>
+            <th data-sort="id"># <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="member">Member <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="book">Book <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="issue">Issued <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="due">Due Date <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th data-sort="status">Status <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in borrowed_books %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ record.user_name }}</td>
+            <td>{{ record.book_title }}</td>
+            <td>{{ record.issue_date }}</td>
+            <td>{{ record.due_date }}</td>
+            <td>
+              {% if record.status == 'overdue' %}
+                <span class="badge bg-danger rounded-pill px-3 py-2">Overdue</span>
+              {% else %}
+                <span class="badge bg-primary rounded-pill px-3 py-2">Active</span>
+              {% endif %}
+            </td>
+            <td>
+              <button class="btn btn-sm btn-warning btn-send-reminder"
+                      data-bs-toggle="tooltip" title="Send return reminder">
+                <i class="bi bi-bell me-1"></i>Remind
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if not borrowed_books %}
+          <!-- Sample rows -->
+          <tr>
+            <td>1</td>
+            <td>Alice Johnson</td>
+            <td>Introduction to Algorithms</td>
+            <td>2026-02-10</td>
+            <td>2026-03-10</td>
+            <td><span class="badge bg-danger rounded-pill px-3 py-2">Overdue</span></td>
+            <td>
+              <button class="btn btn-sm btn-warning btn-send-reminder"
+                      data-bs-toggle="tooltip" title="Send return reminder">
+                <i class="bi bi-bell me-1"></i>Remind
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Bob Williams</td>
+            <td>Clean Code</td>
+            <td>2026-02-20</td>
+            <td>2026-03-20</td>
+            <td><span class="badge bg-primary rounded-pill px-3 py-2">Active</span></td>
+            <td>
+              <button class="btn btn-sm btn-warning btn-send-reminder"
+                      data-bs-toggle="tooltip" title="Send return reminder">
+                <i class="bi bi-bell me-1"></i>Remind
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Carol Davis</td>
+            <td>Design Patterns</td>
+            <td>2026-01-15</td>
+            <td>2026-02-15</td>
+            <td><span class="badge bg-danger rounded-pill px-3 py-2">Overdue</span></td>
+            <td>
+              <button class="btn btn-sm btn-warning btn-send-reminder"
+                      data-bs-toggle="tooltip" title="Send return reminder">
+                <i class="bi bi-bell me-1"></i>Remind
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>David Lee</td>
+            <td>The Pragmatic Programmer</td>
+            <td>2026-03-01</td>
+            <td>2026-04-01</td>
+            <td><span class="badge bg-primary rounded-pill px-3 py-2">Active</span></td>
+            <td>
+              <button class="btn btn-sm btn-warning btn-send-reminder"
+                      data-bs-toggle="tooltip" title="Send return reminder">
+                <i class="bi bi-bell me-1"></i>Remind
+              </button>
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4" aria-label="Borrowed books pagination">
+    <ul class="pagination justify-content-center">
+      <li class="page-item disabled"><a class="page-link" href="#">&laquo; Prev</a></li>
+      <li class="page-item active"><a class="page-link" href="#">1</a></li>
+      <li class="page-item"><a class="page-link" href="#">2</a></li>
+      <li class="page-item"><a class="page-link" href="#">Next &raquo;</a></li>
+    </ul>
+  </nav>
+
+</div>
+{% endblock %}
