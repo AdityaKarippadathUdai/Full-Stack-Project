@@ -1,95 +1,97 @@
 {% extends "base.html" %}
 {% set active_page = 'home' %}
 
-{% block title %}Home — LibraHub{% endblock %}
+{% block title %}Welcome to Smart Library{% endblock %}
 
 {% block content %}
 
-<!-- ==================== HERO ==================== -->
-<section class="hero-section">
+<!-- ==================== HERO SECTION ==================== -->
+<section class="hero-section text-center">
   <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-7">
-        <h1>Discover, Borrow &amp; Manage<br>Your Library Effortlessly</h1>
-        <p class="lead mb-4">
-          LibraHub makes it simple to browse thousands of titles, borrow books instantly,
-          and keep track of all your reading — all in one place.
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h1 class="display-3 fw-bold mb-3 animate__animated animate__fadeInDown">Welcome to Smart Library</h1>
+        <p class="lead mb-5 animate__animated animate__fadeInUp animate__delay-1s">
+          Discover thousands of books at your fingertips. Manage your reading journey with ease and elegance.
         </p>
-        <a href="{{ url_for('register') }}" class="btn btn-accent-custom btn-lg me-2">
-          <i class="bi bi-person-plus me-1"></i>Get Started
-        </a>
-        <a href="#books" class="btn btn-outline-light btn-lg">
-          <i class="bi bi-search me-1"></i>Browse Books
-        </a>
-      </div>
-      <div class="col-lg-5 text-center d-none d-lg-block">
-        <i class="bi bi-book-half" style="font-size:12rem;opacity:.15"></i>
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center animate__animated animate__fadeInUp animate__delay-2s">
+          <a href="#books" class="btn btn-accent-custom btn-lg px-5 shadow">
+            <i class="bi bi-search me-2"></i>Browse Books
+          </a>
+          <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-5">
+            <i class="bi bi-person-plus me-2"></i>Register
+          </a>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ==================== QUICK STATS ==================== -->
-<section class="py-5">
+<!-- ==================== FEATURES SECTION ==================== -->
+<section class="py-5 bg-light">
   <div class="container">
-    <div class="row g-4 text-center">
-
-      <div class="col-6 col-md-3">
-        <div class="card stat-card p-4">
-          <div class="stat-number">{{ stats.total_books | default('12,450') }}</div>
-          <div class="stat-label">Total Books</div>
+    <div class="text-center mb-5">
+      <h2 class="section-title">Our Features</h2>
+      <p class="text-muted">Everything you need to manage your academic reading</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card feature-card h-100 p-4 text-center border-0 shadow-sm">
+          <div class="feature-icon">
+            <i class="bi bi-search"></i>
+          </div>
+          <h3>Easy Book Search</h3>
+          <p class="text-muted">Quickly find any book in our vast collection using keywords, authors, or ISBN.</p>
         </div>
       </div>
-
-      <div class="col-6 col-md-3">
-        <div class="card stat-card p-4">
-          <div class="stat-number">{{ stats.active_members | default('3,200') }}</div>
-          <div class="stat-label">Active Members</div>
+      <div class="col-md-4">
+        <div class="card feature-card h-100 p-4 text-center border-0 shadow-sm">
+          <div class="feature-icon">
+            <i class="bi bi-journal-check"></i>
+          </div>
+          <h3>Track Borrowed Books</h3>
+          <p class="text-muted">Keep an eye on your due dates and borrowing history effortlessly from your dashboard.</p>
         </div>
       </div>
-
-      <div class="col-6 col-md-3">
-        <div class="card stat-card p-4">
-          <div class="stat-number">{{ stats.books_issued | default('1,870') }}</div>
-          <div class="stat-label">Books Issued</div>
+      <div class="col-md-4">
+        <div class="card feature-card h-100 p-4 text-center border-0 shadow-sm">
+          <div class="feature-icon">
+            <i class="bi bi-shield-lock"></i>
+          </div>
+          <h3>Admin Management</h3>
+          <p class="text-muted">Robust tools for librarians to manage inventory, users, and borrowing requests.</p>
         </div>
       </div>
-
-      <div class="col-6 col-md-3">
-        <div class="card stat-card p-4">
-          <div class="stat-number">{{ stats.categories | default('64') }}</div>
-          <div class="stat-label">Categories</div>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
 
-<!-- ==================== FEATURED BOOKS ==================== -->
-<section id="books" class="pb-5">
+<!-- ==================== AVAILABLE BOOKS PREVIEW ==================== -->
+<section id="books" class="py-5">
   <div class="container">
-    <h2 class="section-title">Featured Books</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title mb-0">Available Books</h2>
+      <a href="#" class="btn btn-link text-accent text-decoration-none fw-bold">View All <i class="bi bi-arrow-right"></i></a>
+    </div>
 
     <div class="row g-4">
       {% for book in books %}
       <div class="col-sm-6 col-lg-4 col-xl-3">
-        <div class="card book-card h-100">
-          <div class="book-cover">
+        <div class="card book-card h-100 border-0 shadow-sm">
+          <div class="book-cover position-relative">
             <i class="bi bi-book"></i>
+            {% if book.available %}
+              <span class="badge badge-available position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2 shadow-sm">Available</span>
+            {% else %}
+              <span class="badge badge-unavailable position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2 shadow-sm">Checked Out</span>
+            {% endif %}
           </div>
           <div class="card-body d-flex flex-column">
-            <h5 class="card-title">{{ book.title }}</h5>
-            <p class="card-text mb-1"><i class="bi bi-person me-1"></i>{{ book.author }}</p>
-            <p class="card-text mb-3"><i class="bi bi-upc-scan me-1"></i>{{ book.isbn }}</p>
-            <div class="mt-auto d-flex justify-content-between align-items-center">
-              {% if book.available %}
-                <span class="badge badge-available rounded-pill px-3 py-2">Available</span>
-              {% else %}
-                <span class="badge badge-unavailable rounded-pill px-3 py-2">Checked Out</span>
-              {% endif %}
-              <a href="#" class="btn btn-sm btn-primary-custom" data-bs-toggle="tooltip" title="View details">
-                <i class="bi bi-eye"></i>
+            <h5 class="card-title text-truncate" title="{{ book.title }}">{{ book.title }}</h5>
+            <p class="card-text mb-4 text-muted"><i class="bi bi-person me-1"></i>{{ book.author }}</p>
+            <div class="mt-auto">
+              <a href="#" class="btn btn-primary-custom w-100 py-2">
+                <i class="bi bi-info-circle me-2"></i>View Details
               </a>
             </div>
           </div>
@@ -97,42 +99,13 @@
       </div>
       {% endfor %}
 
-      <!-- ===== Fallback sample cards (shown when no Jinja data) ===== -->
       {% if not books %}
-      {% for i in range(8) %}
-      <div class="col-sm-6 col-lg-4 col-xl-3">
-        <div class="card book-card h-100">
-          <div class="book-cover">
-            <i class="bi bi-book"></i>
-          </div>
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title">Sample Book Title</h5>
-            <p class="card-text mb-1"><i class="bi bi-person me-1"></i>Author Name</p>
-            <p class="card-text mb-3"><i class="bi bi-upc-scan me-1"></i>978-0-00-000000-0</p>
-            <div class="mt-auto d-flex justify-content-between align-items-center">
-              <span class="badge badge-available rounded-pill px-3 py-2">Available</span>
-              <a href="#" class="btn btn-sm btn-primary-custom" data-bs-toggle="tooltip" title="View details">
-                <i class="bi bi-eye"></i>
-              </a>
-            </div>
-          </div>
-        </div>
+      <div class="col-12 text-center py-5">
+        <i class="bi bi-journal-x display-1 text-muted"></i>
+        <p class="mt-3 text-muted">No books available at the moment.</p>
       </div>
-      {% endfor %}
       {% endif %}
     </div>
-
-    <!-- Pagination (visual) -->
-    <nav class="mt-4" aria-label="Books pagination">
-      <ul class="pagination justify-content-center">
-        <li class="page-item disabled"><a class="page-link" href="#">&laquo;</a></li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">&raquo;</a></li>
-      </ul>
-    </nav>
-
   </div>
 </section>
 
