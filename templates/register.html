@@ -1,81 +1,84 @@
 {% extends "base.html" %}
 {% set active_page = 'register' %}
 
-{% block title %}Register — LibraHub{% endblock %}
+{% block title %}Register — Smart Library{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="card form-card shadow">
+<div class="row justify-content-center align-items-center mt-4 mb-5">
+  <div class="col-12 col-md-8 col-lg-5">
+    
+    <div class="card form-card shadow-lg border-0 animate__animated animate__fadeInUp">
+      <div class="card-body p-4 p-md-5">
+        
+        <div class="text-center mb-4">
+          <i class="bi bi-person-plus-fill display-4 text-primary mb-3"></i>
+          <h3 class="fw-bold mb-1" style="color:var(--primary)">Create Account</h3>
+          <p class="text-muted">Join Smart Library to borrow and track your books</p>
+        </div>
 
-    <div class="card-body p-4 p-md-5">
-      <div class="text-center mb-4">
-        <i class="bi bi-person-plus-fill" style="font-size:3rem;color:var(--primary)"></i>
-        <h3 class="mt-2" style="font-weight:700;color:var(--primary)">Create Account</h3>
-        <p class="text-muted">Join LibraHub and start exploring thousands of books</p>
+        <!-- Start Form -->
+        <form id="registerForm" method="POST" action="{{ url_for('register') }}" novalidate>
+          
+          <!-- Full Name -->
+          <div class="mb-4 position-relative">
+            <label for="regName" class="form-label fw-semibold text-primary">Full Name</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-person"></i></span>
+              <input type="text" class="form-control border-start-0 ps-0" id="regName" name="name" placeholder="E.g. John Doe" required>
+            </div>
+            <div class="invalid-feedback position-absolute w-100 mt-1"></div>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-4 position-relative mt-2">
+            <label for="regEmail" class="form-label fw-semibold text-primary">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control border-start-0 ps-0" id="regEmail" name="email" placeholder="you@example.com" required>
+            </div>
+            <div class="invalid-feedback position-absolute w-100 mt-1"></div>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="mb-4 position-relative mt-2">
+            <label for="regPhone" class="form-label fw-semibold text-primary">Phone Number</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-telephone"></i></span>
+              <input type="tel" class="form-control border-start-0 ps-0" id="regPhone" name="phone" placeholder="10-digit number" required>
+            </div>
+            <div class="invalid-feedback position-absolute w-100 mt-1"></div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-4 position-relative mt-2">
+            <label for="regPassword" class="form-label fw-semibold text-primary">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control border-start-0 ps-0" id="regPassword" name="password" placeholder="Min. 8 characters" required>
+            </div>
+            <!-- Password Strength Indicator -->
+            <div class="progress mt-2" style="height: 6px; display: none;" id="pwStrengthContainer">
+              <div id="pwStrengthBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small id="pwStrengthText" class="text-muted mt-1 d-block" style="display: none;"></small>
+            
+            <div class="invalid-feedback position-absolute w-100 mt-1" style="bottom: -22px;"></div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-primary-custom w-100 py-3 mt-4 mb-3 fw-bold rounded-3 shadow-sm">
+            Register <i class="bi bi-person-check ms-1"></i>
+          </button>
+          
+        </form>
+
+        <div class="text-center mt-3">
+          <p class="text-muted mb-0">Already have an account? 
+            <a href="{{ url_for('login') }}" class="text-accent fw-bold text-decoration-none ms-1">Sign in</a>
+          </p>
+        </div>
+
       </div>
-
-      <form id="registerForm" method="POST" action="{{ url_for('register') }}" novalidate>
-        <!-- Full Name -->
-        <div class="mb-3">
-          <label for="regName" class="form-label">Full Name</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-person"></i></span>
-            <input type="text" class="form-control" id="regName" name="name"
-                   placeholder="John Doe" required>
-          </div>
-          <div class="invalid-feedback"></div>
-        </div>
-
-        <!-- Email -->
-        <div class="mb-3">
-          <label for="regEmail" class="form-label">Email Address</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-            <input type="email" class="form-control" id="regEmail" name="email"
-                   placeholder="you@example.com" required>
-          </div>
-          <div class="invalid-feedback"></div>
-        </div>
-
-        <!-- Password -->
-        <div class="mb-3">
-          <label for="regPassword" class="form-label">Password</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-            <input type="password" class="form-control" id="regPassword" name="password"
-                   placeholder="Min. 6 characters" required>
-          </div>
-          <div class="invalid-feedback"></div>
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mb-4">
-          <label for="regConfirm" class="form-label">Confirm Password</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-            <input type="password" class="form-control" id="regConfirm" name="confirm_password"
-                   placeholder="Re-enter password" required>
-          </div>
-          <div class="invalid-feedback"></div>
-        </div>
-
-        <!-- Terms -->
-        <div class="form-check mb-4">
-          <input class="form-check-input" type="checkbox" id="agreeTerms" name="agree" required>
-          <label class="form-check-label" for="agreeTerms">
-            I agree to the <a href="#" class="text-accent" style="text-decoration:none">Terms &amp; Conditions</a>
-          </label>
-        </div>
-
-        <button type="submit" class="btn btn-primary-custom w-100 py-2">
-          <i class="bi bi-person-check me-1"></i>Create Account
-        </button>
-      </form>
-
-      <hr class="my-4">
-      <p class="text-center text-muted mb-0">
-        Already have an account? <a href="{{ url_for('login') }}" class="text-accent fw-semibold" style="text-decoration:none">Sign in</a>
-      </p>
     </div>
 
   </div>

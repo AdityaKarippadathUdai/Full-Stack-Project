@@ -62,9 +62,9 @@ $(function () {
     var $name    = $('#regName');
     var $email   = $('#regEmail');
     var $pass    = $('#regPassword');
-    var $confirm = $('#regConfirm');
+    var $phone   = $('#regPhone');
 
-    [$name, $email, $pass, $confirm].forEach(function ($f) { clearError($f); });
+    [$name, $email, $pass, $phone].forEach(function ($f) { clearError($f); });
 
     if (!$name.val().trim()) {
       showError($name, 'Full name is required.');
@@ -79,23 +79,59 @@ $(function () {
       valid = false;
     }
 
-    if (!$pass.val()) {
-      showError($pass, 'Password is required.');
+    if (!$phone.val().trim()) {
+      showError($phone, 'Phone number is required.');
       valid = false;
-    } else if ($pass.val().length < 6) {
-      showError($pass, 'Password must be at least 6 characters.');
+    } else if (!/^\d{10}$/.test($phone.val().replace(/\D/g, ''))) {
+      showError($phone, 'Please enter a valid 10-digit phone number.');
       valid = false;
     }
 
-    if (!$confirm.val()) {
-      showError($confirm, 'Please confirm your password.');
+    if (!$pass.val()) {
+      showError($pass, 'Password is required.');
       valid = false;
-    } else if ($confirm.val() !== $pass.val()) {
-      showError($confirm, 'Passwords do not match.');
+    } else if ($pass.val().length < 8) {
+      showError($pass, 'Password must be at least 8 characters.');
       valid = false;
     }
 
     if (!valid) e.preventDefault();
+  });
+
+  /* ---------- Password Strength Indicator ---------- */
+  $('#regPassword').on('input', function() {
+    var val = $(this).val();
+    var $container = $('#pwStrengthContainer');
+    var $bar = $('#pwStrengthBar');
+    var $text = $('#pwStrengthText');
+    
+    if (val.length === 0) {
+      $container.hide();
+      $text.hide();
+      return;
+    }
+    
+    $container.show();
+    $text.show();
+    
+    var strength = 0;
+    if (val.length >= 8) strength += 25;
+    if (val.length >= 12) strength += 25;
+    if (/[A-Z]/.test(val)) strength += 25;
+    if (/[0-9]/.test(val) || /[^A-Za-z0-9]/.test(val)) strength += 25;
+    
+    $bar.css('width', strength + '%');
+    
+    if (strength <= 25) {
+      $bar.removeClass('bg-warning bg-success').addClass('bg-danger');
+      $text.text('Weak password').removeClass('text-warning text-success').addClass('text-danger');
+    } else if (strength <= 50) {
+      $bar.removeClass('bg-danger bg-success').addClass('bg-warning');
+      $text.text('Medium password').removeClass('text-danger text-success').addClass('text-warning');
+    } else {
+      $bar.removeClass('bg-danger bg-warning').addClass('bg-success');
+      $text.text('Strong password').removeClass('text-danger text-warning').addClass('text-success');
+    }
   });
 
   /* ---------- Add Book Form (Admin) ---------- */
