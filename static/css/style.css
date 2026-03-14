@@ -273,23 +273,33 @@ main { flex: 1; }
   border: 1px solid var(--border);
   padding: .6rem .9rem;
   font-size: .92rem;
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition: all var(--transition);
+  background-color: #f8f9fa;
 }
 
 .form-control:focus, .form-select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 .2rem rgba(212,168,67,.25);
+  border-color: var(--primary-light);
+  background-color: #fff;
+  box-shadow: 0 0 0 .25rem rgba(44, 62, 107, 0.15);
 }
 
-.form-label {
-  font-weight: 500;
-  font-size: .9rem;
+.form-floating > label {
+  color: var(--text-muted);
+  font-size: .95rem;
+  padding-left: 1rem;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
   color: var(--primary);
-  margin-bottom: .35rem;
+  font-weight: 500;
+  transform: scale(.85) translateY(-.5rem) translateX(.15rem);
 }
 
 .invalid-feedback {
   font-size: .82rem;
+  color: var(--danger);
+  display: block;
 }
 
 /* ===== Buttons ===== */
