@@ -47,7 +47,9 @@ def register():
 def dashboard():
     return render_template("dashboard.html",
                            user={"name": "John Doe", "books_issued": 3, "books_returned": 12, "overdue": 1},
-                           issued_books=SAMPLE_ISSUED)
+                           issued_books=SAMPLE_ISSUED,
+                           books=SAMPLE_BOOKS)
+
 
 @app.route("/admin")
 def admin_dashboard():
