@@ -53,12 +53,15 @@ def dashboard():
 
 @app.route("/admin")
 def admin_dashboard():
+    # Calculate available books from SAMPLE_BOOKS
+    available_qty = sum(b['quantity'] for b in SAMPLE_BOOKS if b['available'])
     return render_template("admin_dashboard.html",
                            books=SAMPLE_BOOKS,
                            borrowed_books=SAMPLE_BORROWED,
                            total_books="1,245",
+                           available_books=str(available_qty),
                            total_issued="328",
-                           total_overdue="17")
+                           total_users="1,402")
 
 @app.route("/success")
 def success():

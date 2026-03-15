@@ -218,14 +218,46 @@ $(function () {
     }
   });
 
-  // Simulate send-reminder click
+  // Simulate send-reminder click on Admin Dashboard
   $(document).on('click', '.btn-send-reminder', function () {
     var $btn = $(this);
+    var user = $btn.data('user') || 'the user';
+    var title = $btn.data('title') || 'this book';
+    
+    // Change button state to sending
     $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Sending…');
+    
+    // Simulate ajax delay
     setTimeout(function () {
       $btn.html('<i class="bi bi-check-circle me-1"></i>Sent');
-      $btn.removeClass('btn-warning').addClass('btn-success');
+      $btn.removeClass('btn-outline-warning btn-warning').addClass('btn-success');
+      
+      // Optional: Show a quick toast or alert
+      // alert('Reminder sent to ' + user + ' for "' + title + '".');
     }, 1200);
+  });
+
+  // Admin Dashboard Delete Confirmation Modal
+  var bookToDelete = null;
+  $(document).on('click', '.btn-remove-book', function () {
+    var title = $(this).data('title');
+    $('#deleteBookTitle').text('"' + title + '"');
+    bookToDelete = $(this).closest('tr');
+  });
+
+  $(document).on('click', '#confirmDeleteBtn', function() {
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Removing…');
+    
+    setTimeout(function() {
+      if (bookToDelete) {
+        bookToDelete.fadeOut(400, function() {
+          $(this).remove();
+        });
+      }
+      $('#deleteConfirmModal').modal('hide');
+      $btn.prop('disabled', false).html('<i class="bi bi-trash me-1"></i>Remove');
+    }, 800);
   });
 
   // Confirm issuing a book
@@ -244,5 +276,16 @@ $(function () {
   setTimeout(function () {
     $('.alert-dismissible').alert('close');
   }, 5000);
+
+  // Smooth scroll for internal links (Admin Sidebar)
+  $('a.nav-link[href^="#"]').on('click', function(e) {
+    var target = $(this.getAttribute('href'));
+    if( target.length ) {
+        e.preventDefault();
+        $('html, body').stop().animate({
+            scrollTop: target.offset().top - 20
+        }, 500);
+    }
+  });
 
 });
