@@ -64,6 +64,7 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route("/dashboard")
+@app.route("/mybooks")
 @login_required
 def dashboard():
     if current_user.role == 'admin':
@@ -130,6 +131,7 @@ def return_book(borrow_id):
 
 # Admin Routes
 @app.route("/admin")
+@app.route("/admin/borrowed_books")
 @login_required
 @admin_required
 def admin_dashboard():
@@ -206,10 +208,10 @@ def remove_book(book_id):
         flash('Book removed successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route("/admin/remind/<int:borrow_id>", methods=['POST'])
+@app.route("/admin/send_reminder/<int:borrow_id>", methods=['POST', 'GET'])
 @login_required
 @admin_required
-def remind_user(borrow_id):
+def send_reminder(borrow_id):
     borrow_record = BorrowedBook.query.get_or_404(borrow_id)
     user = User.query.get(borrow_record.user_id)
     book = Book.query.get(borrow_record.book_id)

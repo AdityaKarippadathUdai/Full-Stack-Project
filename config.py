@@ -14,7 +14,7 @@ class DevelopmentConfig(Config):
     """Development environment configuration."""
     DEBUG = True
     # Default to a local postgres database if DATABASE_URL is not set
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/library_db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'postgresql://postgres:AdityaProject2004#@db.rhhilfawcrqqaysrfpjf.supabase.co:5432/postgres')
 
 class ProductionConfig(Config):
     """Production environment configuration."""
