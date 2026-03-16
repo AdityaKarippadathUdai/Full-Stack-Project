@@ -77,7 +77,7 @@
             </td>
             <td>
               {% if book.status == 'borrowed' %}
-                <a href="{{ url_for('return_book', borrow_id=book.id) }}" class="btn btn-sm btn-outline-success">Return</a>
+                <a href="{{ url_for('main.return_book', borrow_id=book.id) }}" class="btn btn-sm btn-outline-success">Return</a>
               {% endif %}
             </td>
           </tr>

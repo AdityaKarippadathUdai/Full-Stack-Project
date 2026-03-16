@@ -1,23 +1,39 @@
 import os
+import urllib.parse
 from dotenv import load_dotenv
 
-# Load environment variables from a .env file located in the same directory
 basedir = os.path.abspath(os.path.dirname(__file__))
+# Load from .env file
 load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
-    """Base configuration."""
+    """Base Configuration."""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'default-dev-secret-key')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+
 class DevelopmentConfig(Config):
-    """Development environment configuration."""
+    """Development configuration using Supabase/Local connection string."""
     DEBUG = True
-    # Default to a local postgres database if DATABASE_URL is not set
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'postgresql://postgres:AdityaProject2004#@db.rhhilfawcrqqaysrfpjf.supabase.co:5432/postgres')
+    # If DATABASE_URL is in .env, use it. Otherwise, default to local.
+    # We ensure we handle the 'postgres://' vs 'postgresql://' fix often needed for some platforms.
+    raw_uri = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/library_db')
+    if raw_uri and raw_uri.startswith("postgres://"):
+        raw_uri = raw_uri.replace("postgres://", "postgresql://", 1)
+    
+    SQLALCHEMY_DATABASE_URI = raw_uri
 
 class ProductionConfig(Config):
-    """Production environment configuration."""
+    """Production configuration."""
     DEBUG = False
-    # In production, require the DATABASE_URL to be set in the environment
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    raw_uri = os.environ.get('DATABASE_URL')
+    if raw_uri and raw_uri.startswith("postgres://"):
+        raw_uri = raw_uri.replace("postgres://", "postgresql://", 1)
+    
+    SQLALCHEMY_DATABASE_URI = raw_uri
+
+# Dictionary for easy application factory mapping
+config = {
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}

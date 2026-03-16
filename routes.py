@@ -1,9 +1,11 @@
-from flask import render_template, url_for, flash, redirect, request, abort
+from flask import render_template, url_for, flash, redirect, request, abort, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
-from app import app, db, bcrypt, login_manager
+from extensions import db, bcrypt, login_manager
 from models import User, Book, BorrowedBook
 from forms import RegisterForm, LoginForm, AddBookForm, BorrowBookForm
 from datetime import datetime, timedelta, timezone
+
+main = Blueprint('main', __name__)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -18,16 +20,16 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@app.route("/")
-@app.route("/home")
+@main.route("/")
+@main.route("/home")
 def index():
     books = Book.query.all()
     return render_template('index.html', books=books)
 
-@app.route("/register", methods=['GET', 'POST'])
+@main.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('main.dashboard'))
     form = RegisterForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -38,13 +40,13 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to log in', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('main.login'))
     return render_template('register.html', title='Register', form=form)
 
-@app.route("/login", methods=['GET', 'POST'])
+@main.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('main.dashboard'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -52,23 +54,23 @@ def login():
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             if current_user.role == 'admin':
-                return redirect(next_page) if next_page else redirect(url_for('admin_dashboard'))
-            return redirect(next_page) if next_page else redirect(url_for('dashboard'))
+                return redirect(next_page) if next_page else redirect(url_for('main.admin_dashboard'))
+            return redirect(next_page) if next_page else redirect(url_for('main.dashboard'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
 
-@app.route("/logout")
+@main.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('main.index'))
 
-@app.route("/dashboard")
-@app.route("/mybooks")
+@main.route("/dashboard")
+@main.route("/mybooks")
 @login_required
 def dashboard():
     if current_user.role == 'admin':
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('main.admin_dashboard'))
     
     issued_books = BorrowedBook.query.filter_by(user_id=current_user.id).all()
     
@@ -82,12 +84,12 @@ def dashboard():
     books = Book.query.all()
     return render_template("dashboard.html", user=user_stats, issued_books=issued_books, books=books)
 
-@app.route("/books")
+@main.route("/books")
 def books():
     all_books = Book.query.all()
     return render_template("books.html", books=all_books)
 
-@app.route("/borrow/<int:book_id>")
+@main.route("/borrow/<int:book_id>")
 @login_required
 def borrow_book(book_id):
     book = Book.query.get_or_404(book_id)
@@ -96,7 +98,7 @@ def borrow_book(book_id):
         existing_borrow = BorrowedBook.query.filter_by(user_id=current_user.id, book_id=book.id, status='borrowed').first()
         if existing_borrow:
             flash('You have already borrowed this book and not returned it yet.', 'warning')
-            return redirect(url_for('books'))
+            return redirect(url_for('main.books'))
             
         due_date = datetime.now(timezone.utc) + timedelta(days=30)
         borrow_record = BorrowedBook(user_id=current_user.id, book_id=book.id, return_date=due_date)
@@ -111,9 +113,9 @@ def borrow_book(book_id):
                                message=f"You have successfully borrowed '{book.title}'. Please return it by {due_date.strftime('%B %d, %Y')}.")
     else:
         flash('This book is currently unavailable.', 'danger')
-        return redirect(url_for('books'))
+        return redirect(url_for('main.books'))
 
-@app.route("/return/<int:borrow_id>")
+@main.route("/return/<int:borrow_id>")
 @login_required
 def return_book(borrow_id):
     borrow_record = BorrowedBook.query.get_or_404(borrow_id)
@@ -127,11 +129,11 @@ def return_book(borrow_id):
         db.session.commit()
         flash(f"Book '{book.title}' returned successfully.", 'success')
         
-    return redirect(request.referrer or url_for('dashboard'))
+    return redirect(request.referrer or url_for('main.dashboard'))
 
 # Admin Routes
-@app.route("/admin")
-@app.route("/admin/borrowed_books")
+@main.route("/admin")
+@main.route("/admin/borrowed_books")
 @login_required
 @admin_required
 def admin_dashboard():
@@ -170,7 +172,7 @@ def admin_dashboard():
                            total_users=total_users,
                            form=form)
 
-@app.route("/admin/add_book", methods=['POST'])
+@main.route("/admin/add_book", methods=['POST'])
 @login_required
 @admin_required
 def add_book():
@@ -189,9 +191,9 @@ def add_book():
             for error in errors:
                 flash(f"Error in {getattr(form, field).label.text}: {error}", 'danger')
                 
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('main.admin_dashboard'))
 
-@app.route("/admin/remove_book/<int:book_id>", methods=['POST'])
+@main.route("/admin/remove_book/<int:book_id>", methods=['POST'])
 @login_required
 @admin_required
 def remove_book(book_id):
@@ -206,9 +208,9 @@ def remove_book(book_id):
         db.session.delete(book)
         db.session.commit()
         flash('Book removed successfully!', 'success')
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('main.admin_dashboard'))
 
-@app.route("/admin/send_reminder/<int:borrow_id>", methods=['POST', 'GET'])
+@main.route("/admin/send_reminder/<int:borrow_id>", methods=['POST', 'GET'])
 @login_required
 @admin_required
 def send_reminder(borrow_id):
@@ -220,4 +222,4 @@ def send_reminder(borrow_id):
         # For this prototype we will just flash a message representing an email sent.
         flash(f"Reminder email sent to {user.email} for '{book.title}'.", 'info')
     
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('main.admin_dashboard'))

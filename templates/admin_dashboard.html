@@ -175,7 +175,7 @@
             <td><code>{{ book.isbn }}</code></td>
             <td>{{ book.quantity }}</td>
             <td>
-              <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" class="d-inline">
+              <form action="{{ url_for('main.remove_book', book_id=book.id) }}" method="POST" class="d-inline">
                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove book" onclick="return confirm('Are you sure you want to remove this book?');">
                   <i class="bi bi-trash"></i>
                 </button>

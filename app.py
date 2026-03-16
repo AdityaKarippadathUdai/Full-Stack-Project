@@ -1,31 +1,27 @@
 from flask import Flask
 from config import DevelopmentConfig
-from models import db
-from flask_bcrypt import Bcrypt
-from flask_login import LoginManager
-# Initialize extensions
-bcrypt = Bcrypt()
-login_manager = LoginManager()
-login_manager.login_view = 'login'
-login_manager.login_message_category = 'info'
+from extensions import db, bcrypt, login_manager
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+    # Initialize extensions with the app instance
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
 
     with app.app_context():
-        # Import models so they are registered with SQLAlchemy
-        import models
+        # Import and register Blueprints
+        from routes import main
+        app.register_blueprint(main)
         
-        # Import routes
-        import routes
+        # Import models to ensure they are registered
+        import models
 
     return app
 
+# Optional: Create a default app instance for simple usage
 app = create_app()
 
 if __name__ == '__main__':
