@@ -272,6 +272,58 @@ $(function () {
     }
   });
 
+  /* =================================================================
+     CATALOG PAGE FILTERING & SEARCH
+     ================================================================= */
+  var $searchInput = $('#catalogSearch');
+  var $categoryFilter = $('#catalogCategory');
+  var $bookItems = $('.book-item');
+  var $noResultsMsg = $('#noResultsMsg');
+
+  function filterCatalog() {
+    // If not on the catalog page, exit
+    if ($searchInput.length === 0) return;
+
+    var query = $searchInput.val().toLowerCase().trim();
+    var category = $categoryFilter.val().toLowerCase();
+    var visibleCount = 0;
+
+    $bookItems.each(function() {
+      var $item = $(this);
+      var itemTitle = $item.data('title') || "";
+      var itemAuthor = $item.data('author') || "";
+      var itemCategory = $item.data('category') || "";
+
+      // Check category match
+      var categoryMatch = (category === 'all' || itemCategory === category);
+      
+      // Check search match
+      var searchMatch = (itemTitle.indexOf(query) !== -1 || itemAuthor.indexOf(query) !== -1);
+
+      if (categoryMatch && searchMatch) {
+        $item.fadeIn(300);
+        visibleCount++;
+      } else {
+        $item.fadeOut(300);
+      }
+    });
+
+    // Handle "no results" state
+    setTimeout(function() {
+      if (visibleCount === 0) {
+        $noResultsMsg.removeClass('d-none').hide().fadeIn(300);
+      } else {
+        $noResultsMsg.fadeOut(200, function() {
+          $(this).addClass('d-none');
+        });
+      }
+    }, 310);
+  }
+
+  // Bind events for filtering
+  $searchInput.on('keyup', filterCatalog);
+  $categoryFilter.on('change', filterCatalog);
+
   // Auto-dismiss alerts after 5 s
   setTimeout(function () {
     $('.alert-dismissible').alert('close');

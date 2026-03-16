@@ -43,6 +43,10 @@ def login():
 def register():
     return render_template("register.html")
 
+@app.route("/books")
+def books():
+    return render_template("books.html", books=SAMPLE_BOOKS)
+
 @app.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html",

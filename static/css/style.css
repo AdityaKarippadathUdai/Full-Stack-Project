@@ -3,10 +3,12 @@
 
 /* ===== CSS Custom Properties ===== */
 :root {
-  --primary:    #1B2A4A;
-  --primary-light: #2C3E6B;
-  --accent:     #D4A843;
-  --accent-dark:#B8912E;
+  /* Updated Theme Colors based on user request */
+  --primary:    #2c3e50;
+  --secondary:  #34495e;
+  --primary-light: #44596e;
+  --accent:     #f4d03f;
+  --accent-dark:#d4a843;
   --bg:         #FAF7F2;
   --card-bg:    #FFFFFF;
   --text:       #333333;
@@ -14,10 +16,10 @@
   --border:     #E8E0D4;
   --success:    #28A745;
   --danger:     #DC3545;
-  --shadow:     0 2px 12px rgba(27, 42, 74, .08);
-  --shadow-lg:  0 8px 30px rgba(27, 42, 74, .12);
-  --radius:     .625rem;        /* 10px */
-  --transition: .25s ease;
+  --shadow:     0 4px 15px rgba(44, 62, 80, .05);
+  --shadow-lg:  0 10px 40px rgba(44, 62, 80, .15);
+  --radius:     .75rem;        /* Slightly larger 12px for softer look */
+  --transition: .3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* ===== Base ===== */
@@ -316,6 +318,8 @@ main { flex: 1; }
 .btn-primary-custom:hover {
   background-color: var(--primary-light);
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);
 }
 
 .btn-accent-custom {
@@ -331,6 +335,8 @@ main { flex: 1; }
 .btn-accent-custom:hover {
   background-color: var(--accent-dark);
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(244, 208, 63, 0.3);
 }
 
 .btn-outline-danger {

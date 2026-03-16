@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% set active_page = 'books' %} <!-- Used by navbar if needed -->
+
+{% block title %}Books Catalog — LibraHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  
+  <!-- Page Header -->
+  <div class="d-flex flex-column mb-5 text-center">
+    <h1 class="fw-bold" style="color:var(--primary)">
+      <i class="bi bi-collection me-2 text-accent"></i>Books Catalog
+    </h1>
+    <p class="text-muted lead mx-auto" style="max-width: 600px;">
+      Explore our deep collection of academic resources, technical manuals, and general literature. Use the tools below to find exactly what you need.
+    </p>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="card shadow-sm mb-5 border-0 bg-white">
+    <div class="card-body p-4">
+      <div class="row g-3 align-items-center">
+        <!-- Search Input -->
+        <div class="col-md-7 h-100">
+          <div class="input-group input-group-lg h-100 shadow-sm border" style="border-radius: var(--radius)">
+            <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-0 shadow-none ps-0" id="catalogSearch" placeholder="Search by title or author...">
+          </div>
+        </div>
+        <!-- Category Dropdown -->
+        <div class="col-md-5 h-100">
+          <select class="form-select form-select-lg h-100 shadow-sm border" id="catalogCategory" style="border-radius: var(--radius)">
+            <option value="all" selected>All Categories</option>
+            <option value="science">Science</option>
+            <option value="technology">Technology</option>
+            <option value="literature">Literature</option>
+            <option value="history">History</option>
+            <option value="arts">Arts</option>
+            <!-- In a real app we would map 'general' etc properly; here we just fake a few. -->
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Books Grid -->
+  <div class="row row-cols-1 row-cols-md-3 row-cols-xl-4 g-4" id="booksGrid">
+    {% for book in books %}
+    <!-- 
+      We attach data attributes to each column wrapper to make it trivial for jQuery 
+      to read the title/author and category (assigned pseudo-randomly for demo) for filtering.
+    -->
+    <div class="col book-item" 
+         data-title="{{ book.title | lower }}" 
+         data-author="{{ book.author | lower }}"
+         data-category="{% if loop.index0 % 2 == 0 %}technology{% elif loop.index0 % 3 == 0 %}science{% else %}literature{% endif %}">
+      
+      <div class="card h-100 book-card shadow-sm border-0">
+        <!-- Cover Art -->
+        <div class="book-cover d-flex align-items-center justify-content-center text-white" 
+             style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); height: 220px; border-radius: var(--radius) var(--radius) 0 0;">
+          <div class="text-center">
+            <i class="bi bi-book mb-2 d-block" style="font-size: 3rem; opacity: 0.8;"></i>
+            <span class="small text-uppercase tracking-wide opacity-50" style="letter-spacing: 2px;">LibraHub</span>
+          </div>
+        </div>
+        
+        <!-- Card Body -->
+        <div class="card-body d-flex flex-column p-4">
+          <!-- Availability Badge -->
+          <div class="mb-3 d-flex justify-content-between align-items-start">
+            {% if book.available %}
+              <span class="badge bg-success rounded-pill px-3 py-2 fw-medium shadow-sm"><i class="bi bi-check-circle me-1"></i>Available</span>
+            {% else %}
+              <span class="badge bg-danger rounded-pill px-3 py-2 fw-medium shadow-sm"><i class="bi bi-x-circle me-1"></i>Issued</span>
+            {% endif %}
+            
+            <small class="text-muted"><i class="bi bi-layers text-accent me-1"></i>{{ book.quantity }} left</small>
+          </div>
+          
+          <h5 class="card-title fw-bold text-truncate" title="{{ book.title }}" style="color:var(--primary)">{{ book.title }}</h5>
+          <p class="card-text text-muted mb-4 small"><i class="bi bi-person me-1"></i>{{ book.author }}</p>
+          
+          <!-- Action Button - Stays at bottom -->
+          <div class="mt-auto">
+            {% if book.available %}
+              <button class="btn btn-primary-custom w-100 py-2 btn-issue-book shadow-sm" data-title="{{ book.title }}">
+                <i class="bi bi-bookmarks me-1"></i> Issue Book
+              </button>
+            {% else %}
+              <button class="btn btn-secondary w-100 py-2 shadow-sm" disabled style="background-color: var(--secondary);">
+                <i class="bi bi-calendar-x me-1"></i> Waitlist
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Empty State (Hidden initially, shown by jQuery if 0 results) -->
+  <div id="noResultsMsg" class="text-center py-5 d-none">
+    <i class="bi bi-search text-muted opacity-50 display-1 mb-3"></i>
+    <h3 class="fw-bold" style="color:var(--primary)">No books found.</h3>
+    <p class="text-muted">Try adjusting your search terms or category filters to find what you're looking for.</p>
+  </div>
+
+  <!-- Pagination -->
+  <nav class="mt-5 pt-3" aria-label="Books navigation">
+    <ul class="pagination justify-content-center pagination-lg shadow-sm" style="border-radius: var(--radius)">
+      <li class="page-item disabled"><a class="page-link border-0" href="#">&laquo; Prev</a></li>
+      <li class="page-item active"><a class="page-link border-0" href="#">1</a></li>
+      <li class="page-item"><a class="page-link border-0" href="#">2</a></li>
+      <li class="page-item"><a class="page-link border-0" href="#">3</a></li>
+      <li class="page-item"><a class="page-link border-0" href="#">Next &raquo;</a></li>
+    </ul>
+  </nav>
+
+</div>
+{% endblock %}
