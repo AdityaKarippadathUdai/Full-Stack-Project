@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from app import app, db, bcrypt, login_manager
 from models import User, Book, BorrowedBook
-from forms import RegistrationForm, LoginForm, BookForm
+from forms import RegisterForm, LoginForm, AddBookForm, BorrowBookForm
 from datetime import datetime, timedelta, timezone
 
 @login_manager.user_loader
@@ -28,7 +28,7 @@ def index():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
-    form = RegistrationForm()
+    form = RegisterForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         # Make the first user an admin for convenience
@@ -156,8 +156,8 @@ def admin_dashboard():
                 "status": record.status
             })
     
-    # We will need the BookForm to pass to template or we can just redirect to a separate add-book page.
-    form = BookForm()
+    # We will need the AddBookForm to pass to template or we can just redirect to a separate add-book page.
+    form = AddBookForm()
     
     return render_template("admin_dashboard.html",
                            books=books,
@@ -172,7 +172,7 @@ def admin_dashboard():
 @login_required
 @admin_required
 def add_book():
-    form = BookForm()
+    form = AddBookForm()
     if form.validate_on_submit():
         book = Book(title=form.title.data, 
                     author=form.author.data, 

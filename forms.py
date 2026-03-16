@@ -3,14 +3,14 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, Integ
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from models import User, Book
 
-class RegistrationForm(FlaskForm):
+class RegisterForm(FlaskForm):
     name = StringField('Name',
                        validators=[DataRequired(), Length(min=2, max=100)])
     email = StringField('Email',
                         validators=[DataRequired(), Email()])
     phone = StringField('Phone Number', 
                         validators=[DataRequired(), Length(max=20)])
-    password = PasswordField('Password', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm Password',
                                      validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Sign Up')
@@ -32,7 +32,7 @@ class LoginForm(FlaskForm):
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
-class BookForm(FlaskForm):
+class AddBookForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=150)])
     author = StringField('Author', validators=[DataRequired(), Length(max=100)])
     isbn = StringField('ISBN', validators=[DataRequired(), Length(max=20)])
@@ -44,3 +44,7 @@ class BookForm(FlaskForm):
         book = Book.query.filter_by(isbn=isbn.data).first()
         if book:
             raise ValidationError('A book with this ISBN already exists.')
+
+class BorrowBookForm(FlaskForm):
+    book_id = IntegerField('Book ID', validators=[DataRequired()])
+    return_date = StringField('Return Date', validators=[DataRequired()])
