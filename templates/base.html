@@ -61,26 +61,39 @@
                 <i class="bi bi-collection me-1"></i>My Books
               </a>
             </li>
+            {% if current_user.is_authenticated and current_user.role == 'admin' %}
             <li class="nav-item">
               <a class="nav-link {% if active_page == 'admin' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
                 <i class="bi bi-shield-lock me-1"></i>Admin
               </a>
             </li>
+            {% endif %}
           </ul>
 
           <!-- Right‑side auth links -->
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-1">
-            <li class="nav-item">
-              <a class="nav-link {% if active_page == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
-                <i class="bi bi-box-arrow-in-right me-1"></i>Login
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="btn btn-outline-light btn-sm ms-lg-2 px-3 {% if active_page == 'register' %}active{% endif %}"
-                 href="{{ url_for('register') }}">
-                <i class="bi bi-person-plus me-1"></i>Register
-              </a>
-            </li>
+            {% if current_user.is_authenticated %}
+              <li class="nav-item">
+                <span class="nav-link text-light"><i class="bi bi-person-circle me-1"></i>{{ current_user.username }}</span>
+              </li>
+              <li class="nav-item">
+                <a class="btn btn-outline-light btn-sm ms-lg-2 px-3" href="{{ url_for('logout') }}">
+                  <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link {% if active_page == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
+                  <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="btn btn-outline-light btn-sm ms-lg-2 px-3 {% if active_page == 'register' %}active{% endif %}"
+                   href="{{ url_for('register') }}">
+                  <i class="bi bi-person-plus me-1"></i>Register
+                </a>
+              </li>
+            {% endif %}
           </ul>
 
         </div><!-- /.navbar-collapse -->

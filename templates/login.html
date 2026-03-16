@@ -17,34 +17,41 @@
         </div>
 
         <form id="loginForm" method="POST" action="{{ url_for('login') }}" novalidate>
+          {{ form.hidden_tag() }}
           
           <!-- Email Field -->
           <div class="form-floating mb-4 position-relative">
-            <input type="email" class="form-control" id="loginEmail" name="email" placeholder="name@example.com" required>
+            {% if form.email.errors %}
+              {{ form.email(class="form-control is-invalid", id="loginEmail", placeholder="name@example.com") }}
+              <div class="invalid-feedback position-absolute w-100 text-start mt-1">{% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}</div>
+            {% else %}
+              {{ form.email(class="form-control", id="loginEmail", placeholder="name@example.com") }}
+            {% endif %}
             <label for="loginEmail"><i class="bi bi-envelope me-2"></i>Email address</label>
-            <div class="invalid-feedback position-absolute w-100 text-start mt-1"></div>
           </div>
 
           <!-- Password Field -->
           <div class="form-floating mb-4 position-relative">
-            <input type="password" class="form-control" id="loginPassword" name="password" placeholder="Password" required>
+            {% if form.password.errors %}
+              {{ form.password(class="form-control is-invalid", id="loginPassword", placeholder="Password") }}
+              <div class="invalid-feedback position-absolute w-100 text-start mt-1">{% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}</div>
+            {% else %}
+              {{ form.password(class="form-control", id="loginPassword", placeholder="Password") }}
+            {% endif %}
             <label for="loginPassword"><i class="bi bi-lock me-2"></i>Password</label>
-            <div class="invalid-feedback position-absolute w-100 text-start mt-1"></div>
           </div>
 
           <!-- Remember Me + Forgot Password -->
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="rememberMe" name="remember">
-              <label class="form-check-label text-muted" for="rememberMe">Remember me</label>
+              {{ form.remember(class="form-check-input", id="rememberMe") }}
+              <label class="form-check-label text-muted" for="rememberMe">{{ form.remember.label.text }}</label>
             </div>
             <a href="#" class="small text-accent fw-medium text-decoration-none">Forgot password?</a>
           </div>
 
           <!-- Submit Button -->
-          <button type="submit" class="btn btn-primary-custom w-100 py-3 mb-3 fw-bold rounded-3 shadow-sm">
-            Sign In <i class="bi bi-box-arrow-in-right ms-1"></i>
-          </button>
+          {{ form.submit(class="btn btn-primary-custom w-100 py-3 mb-3 fw-bold rounded-3 shadow-sm") }}
           
         </form>
 

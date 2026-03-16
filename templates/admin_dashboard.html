@@ -91,7 +91,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-4">
-          <form id="addBookForm" method="POST" action="{{ url_for('admin_dashboard') }}" novalidate>
+          <form id="addBookForm" method="POST" action="{{ url_for('add_book') }}" novalidate>
+            {{ form.hidden_tag() }}
             <div class="row g-3">
               <!-- Title -->
               <div class="col-md-6">
@@ -174,12 +175,11 @@
             <td><code>{{ book.isbn }}</code></td>
             <td>{{ book.quantity }}</td>
             <td>
-              <button class="btn btn-sm btn-outline-danger btn-remove-book"
-                      data-bs-toggle="modal" data-bs-target="#deleteConfirmModal"
-                      data-title="{{ book.title }}"
-                      title="Remove book">
-                <i class="bi bi-trash"></i>
-              </button>
+              <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove book" onclick="return confirm('Are you sure you want to remove this book?');">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
             </td>
           </tr>
           {% endfor %}
@@ -296,11 +296,11 @@
               <td>{{ record.issue_date }}</td>
               <td>{{ record.due_date }}</td>
               <td>
-                <button class="btn btn-sm btn-outline-warning btn-send-reminder"
-                        data-user="{{ record.user_name }}"
-                        data-title="{{ record.book_title }}">
-                  <i class="bi bi-bell me-1"></i> Send Reminder
-                </button>
+                <form action="{{ url_for('remind_user', borrow_id=record.id) }}" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-bell me-1"></i> Send Reminder
+                  </button>
+                </form>
               </td>
             </tr>
             {% endfor %}

@@ -57,16 +57,17 @@
             <th data-sort="issue">Issue Date <i class="bi bi-arrow-down-up sort-icon"></i></th>
             <th data-sort="return">Return Date <i class="bi bi-arrow-down-up sort-icon"></i></th>
             <th data-sort="status">Status <i class="bi bi-arrow-down-up sort-icon"></i></th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {% for book in issued_books %}
           <tr>
             <td>{{ loop.index }}</td>
-            <td>{{ book.title }}</td>
-            <td>{{ book.author }}</td>
-            <td>{{ book.issue_date }}</td>
-            <td>{{ book.return_date }}</td>
+            <td>{{ book.book.title }}</td>
+            <td>{{ book.book.author }}</td>
+            <td>{{ book.issue_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ book.return_date.strftime('%Y-%m-%d') }}</td>
             <td>
               {% if book.status == 'overdue' %}
                 <span class="badge bg-danger rounded-pill px-3 py-2">Overdue</span>
@@ -74,6 +75,11 @@
                 <span class="badge bg-success rounded-pill px-3 py-2">Returned</span>
               {% else %}
                 <span class="badge bg-primary rounded-pill px-3 py-2">Active</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if book.status in ['active', 'overdue'] %}
+                <a href="{{ url_for('return_book', borrow_id=book.id) }}" class="btn btn-sm btn-outline-success">Return</a>
               {% endif %}
             </td>
           </tr>
@@ -158,9 +164,9 @@
         <div class="card-body d-flex flex-column">
           <h5 class="card-title fw-bold text-truncate" title="{{ book.title }}">{{ book.title }}</h5>
           <p class="card-text text-muted small mb-3 flex-grow-1">By {{ book.author }}</p>
-          <button class="btn btn-primary-custom w-100 mt-auto btn-issue-book" data-title="{{ book.title }}">
+          <a href="{{ url_for('borrow_book', book_id=book.id) }}" class="btn btn-primary-custom w-100 mt-auto">
             Issue Book <i class="bi bi-arrow-right-circle ms-1"></i>
-          </button>
+          </a>>
         </div>
       </div>
     </div>
