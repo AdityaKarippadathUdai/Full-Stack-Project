@@ -69,16 +69,14 @@
             <td>{{ book.issue_date.strftime('%Y-%m-%d') }}</td>
             <td>{{ book.return_date.strftime('%Y-%m-%d') }}</td>
             <td>
-              {% if book.status == 'overdue' %}
-                <span class="badge bg-danger rounded-pill px-3 py-2">Overdue</span>
-              {% elif book.status == 'returned' %}
+              {% if book.status == 'returned' %}
                 <span class="badge bg-success rounded-pill px-3 py-2">Returned</span>
-              {% else %}
-                <span class="badge bg-primary rounded-pill px-3 py-2">Active</span>
+              {% elif book.status == 'borrowed' %}
+                <span class="badge bg-primary rounded-pill px-3 py-2">Borrowed</span>
               {% endif %}
             </td>
             <td>
-              {% if book.status in ['active', 'overdue'] %}
+              {% if book.status == 'borrowed' %}
                 <a href="{{ url_for('return_book', borrow_id=book.id) }}" class="btn btn-sm btn-outline-success">Return</a>
               {% endif %}
             </td>
@@ -154,7 +152,7 @@
 
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
     {% for book in books %}
-    {% if book.available %}
+    {% if book.quantity > 0 %}
     <div class="col">
       <div class="card h-100 book-card shadow-sm border-0">
         <!-- Placeholder for Cover Image -->

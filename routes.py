@@ -34,7 +34,7 @@ def register():
         # Make the first user an admin for convenience
         is_first_user = User.query.count() == 0
         role = 'admin' if is_first_user else 'user'
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=role)
+        user = User(name=form.name.data, email=form.email.data, password=hashed_password, phone=form.phone.data, role=role)
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to log in', 'success')
@@ -72,10 +72,10 @@ def dashboard():
     issued_books = BorrowedBook.query.filter_by(user_id=current_user.id).all()
     
     user_stats = {
-        "name": current_user.username,
-        "books_issued": len([b for b in issued_books if b.status == 'active']),
+        "name": current_user.name,
+        "books_issued": len([b for b in issued_books if b.status == 'borrowed']),
         "books_returned": len([b for b in issued_books if b.status == 'returned']),
-        "overdue": len([b for b in issued_books if b.status == 'overdue'])
+        "overdue": 0 # feature removed in db simplification
     }
     
     books = Book.query.all()
@@ -90,9 +90,9 @@ def books():
 @login_required
 def borrow_book(book_id):
     book = Book.query.get_or_404(book_id)
-    if book.quantity > 0 and book.available:
-        # Check if already borrowed and active
-        existing_borrow = BorrowedBook.query.filter_by(user_id=current_user.id, book_id=book.id, status='active').first()
+    if book.quantity > 0:
+        # Check if already borrowed currently
+        existing_borrow = BorrowedBook.query.filter_by(user_id=current_user.id, book_id=book.id, status='borrowed').first()
         if existing_borrow:
             flash('You have already borrowed this book and not returned it yet.', 'warning')
             return redirect(url_for('books'))
@@ -101,8 +101,6 @@ def borrow_book(book_id):
         borrow_record = BorrowedBook(user_id=current_user.id, book_id=book.id, return_date=due_date)
         
         book.quantity -= 1
-        if book.quantity == 0:
-            book.available = False
             
         db.session.add(borrow_record)
         db.session.commit()
@@ -121,11 +119,10 @@ def return_book(borrow_id):
     if borrow_record.user_id != current_user.id and current_user.role != 'admin':
         abort(403)
         
-    if borrow_record.status == 'active' or borrow_record.status == 'overdue':
+    if borrow_record.status == 'borrowed':
         borrow_record.status = 'returned'
         book = Book.query.get(borrow_record.book_id)
         book.quantity += 1
-        book.available = True
         db.session.commit()
         flash(f"Book '{book.title}' returned successfully.", 'success')
         
@@ -140,8 +137,8 @@ def admin_dashboard():
     borrowed_books_list = BorrowedBook.query.all()
     
     total_books = sum(b.quantity for b in books)
-    available_qty = sum(b.quantity for b in books if b.available)
-    total_issued = BorrowedBook.query.filter((BorrowedBook.status == 'active') | (BorrowedBook.status == 'overdue')).count()
+    available_qty = sum(b.quantity for b in books)
+    total_issued = BorrowedBook.query.filter(BorrowedBook.status == 'borrowed').count()
     total_users = User.query.filter_by(role='user').count()
     
     # Format borrowed books for template
@@ -152,10 +149,10 @@ def admin_dashboard():
         if book and user:
             borrowed_books.append({
                 "id": record.id,
-                "user_name": user.username,
+                "user_name": user.name,
                 "book_title": book.title,
-                "issue_date": record.issue_date.strftime('%Y-%m-%d'),
-                "due_date": record.return_date.strftime('%Y-%m-%d'),
+                "issue_date": record.borrow_date.strftime('%Y-%m-%d'),
+                "due_date": record.return_date.strftime('%Y-%m-%d') if record.return_date else '',
                 "status": record.status
             })
     
@@ -180,8 +177,8 @@ def add_book():
         book = Book(title=form.title.data, 
                     author=form.author.data, 
                     isbn=form.isbn.data, 
-                    quantity=form.quantity.data,
-                    available=(form.quantity.data > 0))
+                    category=form.category.data, 
+                    quantity=form.quantity.data)
         db.session.add(book)
         db.session.commit()
         flash('Book added successfully!', 'success')
@@ -198,7 +195,7 @@ def add_book():
 def remove_book(book_id):
     book = Book.query.get_or_404(book_id)
     # Check if currently borrowed
-    active_borrows = BorrowedBook.query.filter_by(book_id=book.id).filter(BorrowedBook.status.in_(['active', 'overdue'])).count()
+    active_borrows = BorrowedBook.query.filter_by(book_id=book.id).filter(BorrowedBook.status == 'borrowed').count()
     if active_borrows > 0:
         flash(f'Cannot remove book "{book.title}" because it is currently borrowed by {active_borrows} user(s).', 'warning')
     else:

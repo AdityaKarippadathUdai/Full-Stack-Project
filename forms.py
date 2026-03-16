@@ -4,19 +4,21 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationE
 from models import User, Book
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username',
-                           validators=[DataRequired(), Length(min=2, max=20)])
+    name = StringField('Name',
+                       validators=[DataRequired(), Length(min=2, max=100)])
     email = StringField('Email',
                         validators=[DataRequired(), Email()])
+    phone = StringField('Phone Number', 
+                        validators=[DataRequired(), Length(max=20)])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password',
                                      validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Sign Up')
 
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
+    def validate_name(self, name):
+        user = User.query.filter_by(name=name.data).first()
         if user:
-            raise ValidationError('That username is taken. Please choose a different one.')
+            raise ValidationError('That name is taken. Please choose a different one.')
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
@@ -31,9 +33,10 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 class BookForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired(), Length(max=100)])
+    title = StringField('Title', validators=[DataRequired(), Length(max=150)])
     author = StringField('Author', validators=[DataRequired(), Length(max=100)])
     isbn = StringField('ISBN', validators=[DataRequired(), Length(max=20)])
+    category = StringField('Category', validators=[DataRequired(), Length(max=50)])
     quantity = IntegerField('Quantity', validators=[DataRequired()])
     submit = SubmitField('Add Book')
     

@@ -80,7 +80,7 @@
         <div class="card book-card h-100 border-0 shadow-sm">
           <div class="book-cover position-relative">
             <i class="bi bi-book"></i>
-            {% if book.available %}
+            {% if book.quantity > 0 %}
               <span class="badge badge-available position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2 shadow-sm">Available</span>
             {% else %}
               <span class="badge badge-unavailable position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2 shadow-sm">Checked Out</span>
