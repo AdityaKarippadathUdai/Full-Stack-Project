@@ -7,6 +7,10 @@ from datetime import datetime, timedelta, timezone
 
 main = Blueprint('main', __name__)
 
+@main.app_context_processor
+def inject_now():
+    return {'current_year': datetime.now().year}
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -77,7 +81,7 @@ def dashboard():
     
     user_stats = {
         "name": current_user.name,
-        "books_borrowed": len([b for b in borrowed_books if b.status == 'borrowed']),
+        "books_borrowed": len([b for b in borrowed_books if b.status == 'approved']),
         "books_returned": len([b for b in borrowed_books if b.status == 'returned']),
         "overdue": 0 # feature removed in db simplification
     }
@@ -93,6 +97,10 @@ def books():
 @main.route("/borrow/<int:book_id>", methods=['POST'])
 @login_required
 def borrow_book(book_id):
+    if current_user.role == 'admin':
+        flash('Administrators cannot request or borrow books.', 'danger')
+        return redirect(url_for('main.admin_dashboard'))
+    
     book = Book.query.get_or_404(book_id)
     if book.quantity > 0:
         # Check if already has a pending or approved borrow for this book
@@ -235,8 +243,8 @@ def add_book():
 @admin_required
 def remove_book(book_id):
     book = Book.query.get_or_404(book_id)
-    # Check if currently borrowed
-    active_borrows = BorrowedBook.query.filter_by(book_id=book.id).filter(BorrowedBook.status == 'borrowed').count()
+    # Check if currently borrowed (approved and not returned)
+    active_borrows = BorrowedBook.query.filter_by(book_id=book.id).filter(BorrowedBook.status == 'approved').count()
     if active_borrows > 0:
         flash(f'Cannot remove book "{book.title}" because it is currently borrowed by {active_borrows} user(s).', 'warning')
     else:

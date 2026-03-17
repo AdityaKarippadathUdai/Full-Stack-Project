@@ -8,11 +8,13 @@
   
   <!-- Page Header -->
   <div class="d-flex flex-column mb-5 text-center">
-    <h1 class="fw-bold" style="color:var(--primary)">
-      <i class="bi bi-collection me-2 text-accent"></i>Books Catalog
-    </h1>
+    <div class="glass-container mx-auto mb-3">
+        <h1 class="fw-bold mb-0" style="color:var(--primary)">
+          <i class="bi bi-collection me-2 text-accent"></i>Books Catalog
+        </h1>
+    </div>
     <p class="text-muted lead mx-auto" style="max-width: 600px;">
-      Explore our deep collection of academic resources, technical manuals, and general literature. Use the tools below to find exactly what you need.
+      Explore our deep collection of academic resources, technical manuals, and general literature.
     </p>
   </div>
 
@@ -55,7 +57,7 @@
          data-author="{{ book.author | lower }}"
          data-category="{% if loop.index0 % 2 == 0 %}technology{% elif loop.index0 % 3 == 0 %}science{% else %}literature{% endif %}">
       
-      <div class="card h-100 book-card shadow-sm border-0">
+      <div class="card h-100 book-card glass-card shadow-sm border-0">
         <!-- Cover Art -->
         <div class="book-cover d-flex align-items-center justify-content-center text-white" 
              style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); height: 220px; border-radius: var(--radius) var(--radius) 0 0;">
@@ -82,16 +84,28 @@
           <p class="card-text text-muted mb-4 small"><i class="bi bi-person me-1"></i>{{ book.author }}</p>
           
           <div class="mt-auto">
-            {% if book.quantity > 0 %}
-              <form action="{{ url_for('main.borrow_book', book_id=book.id) }}" method="POST">
-                <button type="submit" class="btn btn-primary-custom w-100 py-2 shadow-sm">
-                  <i class="bi bi-send me-1"></i> Request Book
+            {% if current_user.is_authenticated %}
+              {% if current_user.role == 'user' %}
+                {% if book.quantity > 0 %}
+                  <form action="{{ url_for('main.borrow_book', book_id=book.id) }}" method="POST">
+                    <button type="submit" class="btn btn-primary-custom w-100 py-2 shadow-sm">
+                      <i class="bi bi-send me-1"></i> Request Book
+                    </button>
+                  </form>
+                {% else %}
+                  <button class="btn btn-secondary w-100 py-2 shadow-sm" disabled style="background-color: var(--secondary);">
+                    <i class="bi bi-calendar-x me-1"></i> Waitlist
+                  </button>
+                {% endif %}
+              {% else %}
+                <button class="btn btn-light w-100 py-2 shadow-sm" disabled>
+                  <i class="bi bi-shield-lock me-1"></i> Admin Access
                 </button>
-              </form>
+              {% endif %}
             {% else %}
-              <button class="btn btn-secondary w-100 py-2 shadow-sm" disabled style="background-color: var(--secondary);">
-                <i class="bi bi-calendar-x me-1"></i> Waitlist
-              </button>
+              <a href="{{ url_for('main.login') }}" class="btn btn-outline-primary w-100 py-2 shadow-sm">
+                Login to Request
+              </a>
             {% endif %}
           </div>
         </div>

@@ -48,7 +48,7 @@
     </div>
   </h4>
 
-  <div class="table-container glass-container border-0 shadow-lg" style="background: rgba(255, 255, 255, 0.9);">
+  <div class="table-container glass-container border-0 shadow-lg p-0 overflow-hidden" style="background: rgba(255, 255, 255, 0.95);">
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" id="borrowedBooksTable">
         <thead class="table-light opacity-75">
@@ -150,21 +150,4 @@
 
 </div>
 
-<style>
-  .glass-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  .glass-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-  }
-  .glass-container {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(8px);
-    display: inline-block;
-  }
-</style>
 {% endblock %}
