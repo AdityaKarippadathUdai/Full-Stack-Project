@@ -125,11 +125,10 @@ def borrow_book(book_id):
 
 @main.route("/return/<int:borrow_id>")
 @login_required
+@admin_required
 def return_book(borrow_id):
     borrow_record = BorrowedBook.query.get_or_404(borrow_id)
-    if borrow_record.user_id != current_user.id and current_user.role != 'admin':
-        abort(403)
-        
+    
     if borrow_record.status == 'approved':
         borrow_record.status = 'returned'
         book = Book.query.get(borrow_record.book_id)
@@ -137,7 +136,7 @@ def return_book(borrow_id):
         db.session.commit()
         flash(f"Book '{book.title}' returned successfully.", 'success')
         
-    return redirect(request.referrer or url_for('main.dashboard'))
+    return redirect(request.referrer or url_for('main.admin_dashboard'))
 
 @main.route("/admin/approve/<int:borrow_id>", methods=['POST'])
 @login_required

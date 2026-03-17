@@ -92,13 +92,7 @@
               {% endif %}
             </td>
             <td>
-              {% if record.status == 'approved' %}
-                <a href="{{ url_for('main.return_book', borrow_id=record.id) }}" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm">
-                   Return <i class="bi bi-arrow-right-circle ms-1"></i>
-                </a>
-              {% else %}
-                <span class="text-muted small">—</span>
-              {% endif %}
+              <span class="text-muted small">—</span>
             </td>
           </tr>
           {% endfor %}
