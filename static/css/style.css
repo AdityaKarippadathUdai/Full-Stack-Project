@@ -27,7 +27,9 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: var(--bg);
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
+              url('../images/Backgroud-Wallpaper.png') no-repeat center center fixed;
+  background-size: cover;
   color: var(--text);
   min-height: 100vh;
   display: flex;
