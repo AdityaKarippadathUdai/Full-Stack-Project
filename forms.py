@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, IntegerField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from models import User, Book
 
@@ -35,7 +35,13 @@ class AddBookForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=150)])
     author = StringField('Author', validators=[DataRequired(), Length(max=100)])
     isbn = StringField('ISBN', validators=[DataRequired(), Length(max=20)])
-    category = StringField('Category', validators=[DataRequired(), Length(max=50)])
+    category = SelectField('Category', choices=[
+        ('Technology', 'Technology'),
+        ('Arts', 'Arts'),
+        ('Literature', 'Literature'),
+        ('Science', 'Science'),
+        ('History', 'History')
+    ], validators=[DataRequired()])
     quantity = IntegerField('Quantity', validators=[DataRequired()])
     submit = SubmitField('Add Book')
     

@@ -259,11 +259,7 @@
               </div>
               <div class="col-md-3">
                 <label for="bookCategory" class="form-label">Category</label>
-                <select class="form-select" id="bookCategory" name="category">
-                  <option value="general">General</option>
-                  <option value="science">Science</option>
-                  <option value="technology">Technology</option>
-                </select>
+                {{ form.category(class="form-select", id="bookCategory") }}
               </div>
             </div>
           </form>

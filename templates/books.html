@@ -33,12 +33,11 @@
         <div class="col-md-5 h-100">
           <select class="form-select form-select-lg h-100 shadow-sm border" id="catalogCategory" style="border-radius: var(--radius)">
             <option value="all" selected>All Categories</option>
-            <option value="science">Science</option>
-            <option value="technology">Technology</option>
-            <option value="literature">Literature</option>
-            <option value="history">History</option>
-            <option value="arts">Arts</option>
-            <!-- In a real app we would map 'general' etc properly; here we just fake a few. -->
+            <option value="Technology">Technology</option>
+            <option value="Arts">Arts</option>
+            <option value="Literature">Literature</option>
+            <option value="Science">Science</option>
+            <option value="History">History</option>
           </select>
         </div>
       </div>
@@ -52,10 +51,10 @@
       We attach data attributes to each column wrapper to make it trivial for jQuery 
       to read the title/author and category (assigned pseudo-randomly for demo) for filtering.
     -->
-    <div class="col book-item" 
-         data-title="{{ book.title | lower }}" 
-         data-author="{{ book.author | lower }}"
-         data-category="{% if loop.index0 % 2 == 0 %}technology{% elif loop.index0 % 3 == 0 %}science{% else %}literature{% endif %}">
+     <div class="col book-item" 
+          data-title="{{ book.title | lower }}" 
+          data-author="{{ book.author | lower }}"
+          data-category="{{ book.category }}">
       
       <div class="card h-100 book-card glass-card shadow-sm border-0">
         <!-- Cover Art -->
