@@ -150,6 +150,7 @@
               <th>Book Title</th>
               <th>Borrow Date</th>
               <th>Return Date</th>
+              <th>Last Reminder</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -163,6 +164,7 @@
                   <td>{{ record.book_title }}</td>
                   <td>{{ record.borrow_date }}</td>
                   <td>{{ record.return_date }}</td>
+                  <td><small class="text-muted">{{ record.last_reminder_at }}</small></td>
                   <td>
                     <a href="{{ url_for('main.return_book', borrow_id=record.id) }}" class="btn btn-sm btn-primary" onclick="return confirm('Mark this book as returned?');">
                       <i class="bi bi-arrow-return-left me-1"></i>Mark Returned
@@ -238,7 +240,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-4">
-          <form id="addBookForm" method="POST" action="{{ url_for('main.add_book') }}" novalidate>
+          <form id="addBookForm" method="POST" action="{{ url_for('main.add_book') }}" enctype="multipart/form-data" novalidate>
             {{ form.hidden_tag() }}
             <div class="row g-3">
               <div class="col-md-6">
@@ -260,6 +262,11 @@
               <div class="col-md-3">
                 <label for="bookCategory" class="form-label">Category</label>
                 {{ form.category(class="form-select", id="bookCategory") }}
+              </div>
+              <div class="col-md-12">
+                <label for="bookImage" class="form-label">Book Image (Optional)</label>
+                {{ form.image(class="form-control", id="bookImage") }}
+                <div class="form-text">Choose a JPG or PNG file.</div>
               </div>
             </div>
           </form>

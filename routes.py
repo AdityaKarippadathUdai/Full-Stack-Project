@@ -1,9 +1,11 @@
-from flask import render_template, url_for, flash, redirect, request, abort, Blueprint
+from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, current_app
 from flask_login import login_user, current_user, logout_user, login_required
 from extensions import db, bcrypt, login_manager
 from models import User, Book, BorrowedBook
 from forms import RegisterForm, LoginForm, AddBookForm, BorrowBookForm
 from datetime import datetime, timedelta, timezone
+import os
+import secrets
 
 main = Blueprint('main', __name__)
 
@@ -201,7 +203,8 @@ def admin_dashboard():
                 "requested_at": record.requested_at.strftime('%Y-%m-%d %H:%M') if record.requested_at else 'N/A',
                 "borrow_date": record.borrow_date.strftime('%Y-%m-%d') if record.borrow_date else 'N/A',
                 "return_date": record.return_date.strftime('%Y-%m-%d') if record.return_date else 'N/A',
-                "status": record.status
+                "status": record.status,
+                "last_reminder_at": record.last_reminder_at.strftime('%Y-%m-%d %H:%M') if record.last_reminder_at else 'Never'
             })
     
     # We will need the AddBookForm to pass to template or we can just redirect to a separate add-book page.
@@ -216,17 +219,34 @@ def admin_dashboard():
                            total_users=total_users,
                            form=form)
 
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(current_app.root_path, 'static/images', picture_fn)
+    
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(picture_path), exist_ok=True)
+    
+    form_picture.save(picture_path)
+    return picture_fn
+
 @main.route("/admin/add_book", methods=['POST'])
 @login_required
 @admin_required
 def add_book():
     form = AddBookForm()
     if form.validate_on_submit():
+        image_file = 'default.jpg'
+        if form.image.data:
+            image_file = save_picture(form.image.data)
+            
         book = Book(title=form.title.data, 
                     author=form.author.data, 
                     isbn=form.isbn.data, 
                     category=form.category.data, 
-                    quantity=form.quantity.data)
+                    quantity=form.quantity.data,
+                    image_file=image_file)
         db.session.add(book)
         db.session.commit()
         flash('Book added successfully!', 'success')
@@ -259,11 +279,22 @@ def remove_book(book_id):
 @admin_required
 def send_reminder(borrow_id):
     borrow_record = BorrowedBook.query.get_or_404(borrow_id)
+    
+    if borrow_record.status != 'approved':
+        flash('Reminders can only be sent for approved books.', 'warning')
+        return redirect(url_for('main.admin_dashboard'))
+        
     user = User.query.get(borrow_record.user_id)
     book = Book.query.get(borrow_record.book_id)
     
     if user and book:
-        # For this prototype we will just flash a message representing an email sent.
-        flash(f"Reminder email sent to {user.email} for '{book.title}'.", 'info')
+        # Update system state
+        borrow_record.last_reminder_at = datetime.now(timezone.utc)
+        db.session.commit()
+        
+        # In a real app, this would send an email
+        flash(f"Reminder email sent to {user.email} for '{book.title}'.", 'success')
+    else:
+        flash("Could not send reminder. User or Book not found.", "danger")
     
     return redirect(url_for('main.admin_dashboard'))

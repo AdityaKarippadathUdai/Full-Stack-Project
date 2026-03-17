@@ -25,6 +25,7 @@ class Book(db.Model):
     isbn = db.Column(db.String(20), unique=True, nullable=False)
     category = db.Column(db.String(50), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
+    image_file = db.Column(db.String(100), nullable=False, default='default.jpg')
     
     # Relationship with BorrowedBooks
     borrow_records = db.relationship('BorrowedBook', backref='book', lazy=True)
@@ -41,6 +42,7 @@ class BorrowedBook(db.Model):
     borrow_date = db.Column(db.DateTime, nullable=True)
     return_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), nullable=False, default='pending') # 'pending', 'approved', 'rejected', 'returned'
+    last_reminder_at = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
         return f"BorrowedBook(User ID: {self.user_id}, Book ID: {self.book_id}, Status: {self.status})"

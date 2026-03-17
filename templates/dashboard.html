@@ -126,8 +126,12 @@
     {% if book.quantity > 0 %}
     <div class="col">
       <div class="card h-100 book-card shadow-sm border-0 glass-card">
-        <div class="bg-light d-flex align-items-center justify-content-center rounded-top border-bottom" style="height: 180px; color: var(--primary);">
-          <i class="bi bi-journal-text display-2 opacity-25"></i>
+        <div class="bg-light d-flex align-items-center justify-content-center rounded-top border-bottom" style="height: 180px; color: var(--primary); overflow: hidden;">
+          {% if book.image_file and book.image_file != 'default.jpg' %}
+            <img src="{{ url_for('static', filename='images/' + book.image_file) }}" class="h-100 w-100 object-fit-cover" alt="{{ book.title }}">
+          {% else %}
+            <i class="bi bi-journal-text display-2 opacity-25"></i>
+          {% endif %}
         </div>
         <div class="card-body d-flex flex-column p-4">
           <h5 class="card-title fw-bold text-truncate" title="{{ book.title }}">{{ book.title }}</h5>

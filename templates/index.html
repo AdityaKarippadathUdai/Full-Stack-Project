@@ -81,7 +81,11 @@
       <div class="col-sm-6 col-lg-4 col-xl-3">
         <div class="card book-card glass-card h-100 border-0 shadow-sm">
           <div class="book-cover position-relative">
-            <i class="bi bi-book"></i>
+            {% if book.image_file and book.image_file != 'default.jpg' %}
+              <img src="{{ url_for('static', filename='images/' + book.image_file) }}" class="card-img-top h-100 w-100 object-fit-cover" alt="{{ book.title }}">
+            {% else %}
+              <i class="bi bi-book"></i>
+            {% endif %}
             {% if book.quantity > 0 %}
               <span class="badge badge-available position-absolute top-0 end-0 m-3 rounded-pill px-3 py-2 shadow-sm">Available</span>
             {% else %}

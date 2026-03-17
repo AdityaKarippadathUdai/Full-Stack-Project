@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, IntegerField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from models import User, Book
@@ -43,6 +44,7 @@ class AddBookForm(FlaskForm):
         ('History', 'History')
     ], validators=[DataRequired()])
     quantity = IntegerField('Quantity', validators=[DataRequired()])
+    image = FileField('Book Image', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Add Book')
     
     def validate_isbn(self, isbn):
