@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="row justify-content-center align-items-center mt-4 mb-5">
-  <div class="col-12 col-md-8 col-lg-5">
+  <div class="col-12 col-md-8 col-lg-6">
     
     <div class="card form-card shadow-lg border-0 animate__animated animate__fadeInUp">
       <div class="card-body p-4 p-md-5">
@@ -20,72 +20,92 @@
         <form id="registerForm" method="POST" action="{{ url_for('main.register') }}" novalidate>
           {{ form.hidden_tag() }}
           
-          <!-- Full Name -->
+          <div class="row g-3">
+            <!-- Full Name -->
+            <div class="col-md-6 mb-3 position-relative">
+              <label for="regName" class="form-label fw-semibold text-primary">Full Name</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-person"></i></span>
+                {% if form.name.errors %}
+                  {{ form.name(class="form-control border-start-0 ps-0 is-invalid", id="regName", placeholder="E.g. John Doe") }}
+                  <div class="invalid-feedback position-absolute w-100 mt-1" style="top: 100%;">
+                    {% for error in form.name.errors %}<span>{{ error }}</span>{% endfor %}
+                  </div>
+                {% else %}
+                  {{ form.name(class="form-control border-start-0 ps-0", id="regName", placeholder="E.g. John Doe") }}
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6 mb-3 position-relative">
+              <label for="regEmail" class="form-label fw-semibold text-primary">Email Address</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+                {% if form.email.errors %}
+                  {{ form.email(class="form-control border-start-0 ps-0 is-invalid", id="regEmail", placeholder="you@example.com") }}
+                  <div class="invalid-feedback position-absolute w-100 mt-1" style="top: 100%;">
+                    {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
+                  </div>
+                {% else %}
+                  {{ form.email(class="form-control border-start-0 ps-0", id="regEmail", placeholder="you@example.com") }}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone Number -->
           <div class="mb-4 position-relative">
-            <label for="regName" class="form-label fw-semibold text-primary">Username</label>
+            <label for="regPhone" class="form-label fw-semibold text-primary">Phone Number</label>
             <div class="input-group">
-              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-person"></i></span>
-              {% if form.username.errors %}
-                {{ form.username(class="form-control border-start-0 ps-0 is-invalid", id="regName", placeholder="E.g. johndoe") }}
+              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-telephone"></i></span>
+              {% if form.phone.errors %}
+                {{ form.phone(class="form-control border-start-0 ps-0 is-invalid", id="regPhone", placeholder="E.g. +1 234 567 890") }}
                 <div class="invalid-feedback position-absolute w-100 mt-1" style="top: 100%;">
-                  {% for error in form.username.errors %}<span>{{ error }}</span>{% endfor %}
+                  {% for error in form.phone.errors %}<span>{{ error }}</span>{% endfor %}
                 </div>
               {% else %}
-                {{ form.username(class="form-control border-start-0 ps-0", id="regName", placeholder="E.g. johndoe") }}
+                {{ form.phone(class="form-control border-start-0 ps-0", id="regPhone", placeholder="E.g. +1 234 567 890") }}
               {% endif %}
             </div>
           </div>
 
-          <!-- Email -->
-          <div class="mb-4 position-relative mt-2">
-            <label for="regEmail" class="form-label fw-semibold text-primary">Email Address</label>
-            <div class="input-group">
-              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
-              {% if form.email.errors %}
-                {{ form.email(class="form-control border-start-0 ps-0 is-invalid", id="regEmail", placeholder="you@example.com") }}
-                <div class="invalid-feedback position-absolute w-100 mt-1" style="top: 100%;">
-                  {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
-                </div>
-              {% else %}
-                {{ form.email(class="form-control border-start-0 ps-0", id="regEmail", placeholder="you@example.com") }}
-              {% endif %}
+          <div class="row g-3">
+            <!-- Password -->
+            <div class="col-md-6 mb-4 position-relative">
+              <label for="regPassword" class="form-label fw-semibold text-primary">Password</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+                {% if form.password.errors %}
+                  {{ form.password(class="form-control border-start-0 ps-0 is-invalid", id="regPassword", placeholder="Min. 8 chars") }}
+                  <div class="invalid-feedback position-absolute w-100 mt-1" style="top: 100%;">
+                    {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                  </div>
+                {% else %}
+                  {{ form.password(class="form-control border-start-0 ps-0", id="regPassword", placeholder="Min. 8 chars") }}
+                {% endif %}
+              </div>
             </div>
-          </div>
 
-          <!-- Password -->
-          <div class="mb-4 position-relative mt-2">
-            <label for="regPassword" class="form-label fw-semibold text-primary">Password</label>
-            <div class="input-group">
-              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span>
-              {% if form.password.errors %}
-                {{ form.password(class="form-control border-start-0 ps-0 is-invalid", id="regPassword", placeholder="Min. 8 characters") }}
-                <div class="invalid-feedback position-absolute w-100 mt-1" style="top: 100%;">
-                  {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
-                </div>
-              {% else %}
-                {{ form.password(class="form-control border-start-0 ps-0", id="regPassword", placeholder="Min. 8 characters") }}
-              {% endif %}
-            </div>
-          </div>
-
-          <!-- Confirm Password -->
-          <div class="mb-4 position-relative mt-2">
-            <label for="regPasswordConfirm" class="form-label fw-semibold text-primary">Confirm Password</label>
-            <div class="input-group">
-              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock-fill"></i></span>
-              {% if form.confirm_password.errors %}
-                {{ form.confirm_password(class="form-control border-start-0 ps-0 is-invalid", id="regPasswordConfirm", placeholder="Confirm Password") }}
-                <div class="invalid-feedback position-absolute w-100 mt-1" style="top: 100%;">
-                  {% for error in form.confirm_password.errors %}<span>{{ error }}</span>{% endfor %}
-                </div>
-              {% else %}
-                {{ form.confirm_password(class="form-control border-start-0 ps-0", id="regPasswordConfirm", placeholder="Confirm Password") }}
-              {% endif %}
+            <!-- Confirm Password -->
+            <div class="col-md-6 mb-4 position-relative">
+              <label for="regPasswordConfirm" class="form-label fw-semibold text-primary">Confirm Password</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock-fill"></i></span>
+                {% if form.confirm_password.errors %}
+                  {{ form.confirm_password(class="form-control border-start-0 ps-0 is-invalid", id="regPasswordConfirm", placeholder="Confirm") }}
+                  <div class="invalid-feedback position-absolute w-100 mt-1" style="top: 100%;">
+                    {% for error in form.confirm_password.errors %}<span>{{ error }}</span>{% endfor %}
+                  </div>
+                {% else %}
+                  {{ form.confirm_password(class="form-control border-start-0 ps-0", id="regPasswordConfirm", placeholder="Confirm") }}
+                {% endif %}
+              </div>
             </div>
           </div>
 
           <!-- Submit Button -->
-          {{ form.submit(class="btn btn-primary-custom w-100 py-3 mt-4 mb-3 fw-bold rounded-3 shadow-sm") }}
+          {{ form.submit(class="btn btn-primary-custom w-100 py-3 mt-2 mb-3 fw-bold rounded-3 shadow-sm") }}
           
         </form>
 

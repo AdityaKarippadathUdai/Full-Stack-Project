@@ -46,18 +46,19 @@ def register():
 @main.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        if current_user.role == 'admin':
+            return redirect(url_for('main.admin_dashboard'))
         return redirect(url_for('main.dashboard'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user, remember=form.remember.data)
-            next_page = request.args.get('next')
-            if current_user.role == 'admin':
-                return redirect(next_page) if next_page else redirect(url_for('main.admin_dashboard'))
-            return redirect(next_page) if next_page else redirect(url_for('main.dashboard'))
+            login_user(user)
+            if user.role == 'admin':
+                return redirect(url_for('main.admin_dashboard'))
+            return redirect(url_for('main.dashboard'))
         else:
-            flash('Login Unsuccessful. Please check email and password', 'danger')
+            flash('Login failed. Check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
 
 @main.route("/logout")
@@ -72,45 +73,44 @@ def dashboard():
     if current_user.role == 'admin':
         return redirect(url_for('main.admin_dashboard'))
     
-    issued_books = BorrowedBook.query.filter_by(user_id=current_user.id).all()
+    borrowed_books = BorrowedBook.query.filter_by(user_id=current_user.id).all()
     
     user_stats = {
         "name": current_user.name,
-        "books_issued": len([b for b in issued_books if b.status == 'borrowed']),
-        "books_returned": len([b for b in issued_books if b.status == 'returned']),
+        "books_borrowed": len([b for b in borrowed_books if b.status == 'borrowed']),
+        "books_returned": len([b for b in borrowed_books if b.status == 'returned']),
         "overdue": 0 # feature removed in db simplification
     }
     
     books = Book.query.all()
-    return render_template("dashboard.html", user=user_stats, issued_books=issued_books, books=books)
+    return render_template("dashboard.html", user=user_stats, borrowed_books=borrowed_books, books=books)
 
 @main.route("/books")
 def books():
     all_books = Book.query.all()
     return render_template("books.html", books=all_books)
 
-@main.route("/borrow/<int:book_id>")
+@main.route("/borrow/<int:book_id>", methods=['POST'])
 @login_required
 def borrow_book(book_id):
     book = Book.query.get_or_404(book_id)
     if book.quantity > 0:
-        # Check if already borrowed currently
-        existing_borrow = BorrowedBook.query.filter_by(user_id=current_user.id, book_id=book.id, status='borrowed').first()
-        if existing_borrow:
-            flash('You have already borrowed this book and not returned it yet.', 'warning')
+        # Check if already has a pending or approved borrow for this book
+        existing_request = BorrowedBook.query.filter_by(user_id=current_user.id, book_id=book.id).filter(BorrowedBook.status.in_(['pending', 'approved'])).first()
+        if existing_request:
+            if existing_request.status == 'pending':
+                flash('You have already requested to borrow this book. Please wait for admin approval.', 'info')
+            else:
+                flash('You have already borrowed this book and not returned it yet.', 'warning')
             return redirect(url_for('main.books'))
             
-        due_date = datetime.now(timezone.utc) + timedelta(days=30)
-        borrow_record = BorrowedBook(user_id=current_user.id, book_id=book.id, return_date=due_date)
-        
-        book.quantity -= 1
+        borrow_request = BorrowedBook(user_id=current_user.id, book_id=book.id, status='pending', requested_at=datetime.now(timezone.utc))
             
-        db.session.add(borrow_record)
+        db.session.add(borrow_request)
         db.session.commit()
         
-        return render_template("success.html", 
-                               title="Book Borrowed Successfully!",
-                               message=f"You have successfully borrowed '{book.title}'. Please return it by {due_date.strftime('%B %d, %Y')}.")
+        flash(f"Your request to borrow '{book.title}' has been submitted and is pending admin approval.", 'success')
+        return redirect(url_for('main.dashboard'))
     else:
         flash('This book is currently unavailable.', 'danger')
         return redirect(url_for('main.books'))
@@ -122,7 +122,7 @@ def return_book(borrow_id):
     if borrow_record.user_id != current_user.id and current_user.role != 'admin':
         abort(403)
         
-    if borrow_record.status == 'borrowed':
+    if borrow_record.status == 'approved':
         borrow_record.status = 'returned'
         book = Book.query.get(borrow_record.book_id)
         book.quantity += 1
@@ -130,6 +130,42 @@ def return_book(borrow_id):
         flash(f"Book '{book.title}' returned successfully.", 'success')
         
     return redirect(request.referrer or url_for('main.dashboard'))
+
+@main.route("/admin/approve/<int:borrow_id>", methods=['POST'])
+@login_required
+@admin_required
+def approve_request(borrow_id):
+    borrow_record = BorrowedBook.query.get_or_404(borrow_id)
+    if borrow_record.status != 'pending':
+        flash('This request is no longer pending.', 'warning')
+        return redirect(url_for('main.admin_dashboard'))
+    
+    book = Book.query.get(borrow_record.book_id)
+    if book.quantity > 0:
+        borrow_record.status = 'approved'
+        borrow_record.borrow_date = datetime.now(timezone.utc)
+        borrow_record.return_date = datetime.now(timezone.utc) + timedelta(days=30)
+        book.quantity -= 1
+        db.session.commit()
+        flash(f"Request for '{book.title}' approved successfully.", 'success')
+    else:
+        flash(f"Cannot approve request. '{book.title}' is currently out of stock.", 'danger')
+    
+    return redirect(url_for('main.admin_dashboard'))
+
+@main.route("/admin/reject/<int:borrow_id>", methods=['POST'])
+@login_required
+@admin_required
+def reject_request(borrow_id):
+    borrow_record = BorrowedBook.query.get_or_404(borrow_id)
+    if borrow_record.status != 'pending':
+        flash('This request is no longer pending.', 'warning')
+        return redirect(url_for('main.admin_dashboard'))
+    
+    borrow_record.status = 'rejected'
+    db.session.commit()
+    flash("Borrow request has been rejected.", 'info')
+    return redirect(url_for('main.admin_dashboard'))
 
 # Admin Routes
 @main.route("/admin")
@@ -142,7 +178,7 @@ def admin_dashboard():
     
     total_books = sum(b.quantity for b in books)
     available_qty = sum(b.quantity for b in books)
-    total_issued = BorrowedBook.query.filter(BorrowedBook.status == 'borrowed').count()
+    total_borrowed = BorrowedBook.query.filter(BorrowedBook.status == 'approved').count()
     total_users = User.query.filter_by(role='user').count()
     
     # Format borrowed books for template
@@ -155,8 +191,9 @@ def admin_dashboard():
                 "id": record.id,
                 "user_name": user.name,
                 "book_title": book.title,
-                "issue_date": record.borrow_date.strftime('%Y-%m-%d'),
-                "due_date": record.return_date.strftime('%Y-%m-%d') if record.return_date else '',
+                "requested_at": record.requested_at.strftime('%Y-%m-%d %H:%M') if record.requested_at else 'N/A',
+                "borrow_date": record.borrow_date.strftime('%Y-%m-%d') if record.borrow_date else 'N/A',
+                "return_date": record.return_date.strftime('%Y-%m-%d') if record.return_date else 'N/A',
                 "status": record.status
             })
     
@@ -168,7 +205,7 @@ def admin_dashboard():
                            borrowed_books=borrowed_books,
                            total_books=total_books,
                            available_books=available_qty,
-                           total_issued=total_issued,
+                           total_borrowed=total_borrowed,
                            total_users=total_users,
                            form=form)
 

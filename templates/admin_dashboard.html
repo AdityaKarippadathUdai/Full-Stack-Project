@@ -26,13 +26,18 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#borrowedBooksSection">
-              <i class="bi bi-clock-history me-2"></i>Borrowed Books
+            <a class="nav-link" href="#requestsSection">
+              <i class="bi bi-question-circle me-2"></i>Pending Requests
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#borrowedBooksSection" title="Scroll to send reminders">
-              <i class="bi bi-bell-fill me-2"></i>Send Reminder
+            <a class="nav-link" href="#approvedSection">
+              <i class="bi bi-check-circle me-2"></i>Approved Books
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#returnedSection">
+              <i class="bi bi-arrow-return-left me-2"></i>Returned Books
             </a>
           </li>
         </ul>
@@ -56,26 +61,168 @@
   <div id="dashboardStats" class="row g-4 mb-5">
     <div class="col-md-3">
       <div class="card stat-card p-4 text-center">
-        <div class="stat-number">{{ total_books | default('1,245') }}</div>
+        <div class="stat-number">{{ total_books | default('0') }}</div>
         <div class="stat-label">Total Books</div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card stat-card p-4 text-center">
-        <div class="stat-number">{{ total_issued | default('328') }}</div>
-        <div class="stat-label">Borrowed Books</div>
+        <div class="stat-number">{{ total_borrowed | default('0') }}</div>
+        <div class="stat-label">Total Borrowed</div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card stat-card p-4 text-center">
-        <div class="stat-number text-success">{{ available_books | default('412') }}</div>
+        <div class="stat-number text-success">{{ available_books | default('0') }}</div>
         <div class="stat-label">Available Books</div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card stat-card p-4 text-center">
-        <div class="stat-number text-info">{{ total_users | default('1,402') }}</div>
+        <div class="stat-number text-info">{{ total_users | default('0') }}</div>
         <div class="stat-label">Total Users</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Pending Requests ===== -->
+  <div id="requestsSection" class="pt-4 mt-2 mb-5">
+    <h4 class="fw-bold mb-3" style="color:var(--primary)">
+      <i class="bi bi-question-circle me-1"></i>Pending Borrow Requests
+    </h4>
+    <div class="table-container shadow-sm border rounded bg-white p-3">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>User</th>
+              <th>Book Title</th>
+              <th>Request Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set has_pending = false %}
+            {% for record in borrowed_books %}
+              {% if record.status == 'pending' %}
+                {% set has_pending = true %}
+                <tr>
+                  <td><span class="fw-medium">{{ record.user_name }}</span></td>
+                  <td>{{ record.book_title }}</td>
+                  <td class="text-muted">{{ record.requested_at }}</td>
+                  <td>
+                    <form action="{{ url_for('main.approve_request', borrow_id=record.id) }}" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-success px-3" onclick="return confirm('Approve this borrow request?');">
+                        <i class="bi bi-check2-circle me-1"></i>Approve
+                      </button>
+                    </form>
+                    <form action="{{ url_for('main.reject_request', borrow_id=record.id) }}" method="POST" class="d-inline ms-1">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Reject this borrow request?');">
+                        Reject
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+            {% if not has_pending %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">No pending requests.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Approved / Currently Borrowed ===== -->
+  <div id="approvedSection" class="pt-4 mt-2 mb-5">
+    <h4 class="fw-bold mb-3" style="color:var(--primary)">
+      <i class="bi bi-check-circle me-1"></i>Currently Borrowed Books
+    </h4>
+    <div class="table-container shadow-sm border rounded bg-white p-3">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>User</th>
+              <th>Book Title</th>
+              <th>Borrow Date</th>
+              <th>Return Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set has_approved = false %}
+            {% for record in borrowed_books %}
+              {% if record.status == 'approved' %}
+                {% set has_approved = true %}
+                <tr>
+                  <td><span class="fw-medium">{{ record.user_name }}</span></td>
+                  <td>{{ record.book_title }}</td>
+                  <td>{{ record.borrow_date }}</td>
+                  <td>{{ record.return_date }}</td>
+                  <td>
+                    <a href="{{ url_for('main.return_book', borrow_id=record.id) }}" class="btn btn-sm btn-primary" onclick="return confirm('Mark this book as returned?');">
+                      <i class="bi bi-arrow-return-left me-1"></i>Mark Returned
+                    </a>
+                    <form action="{{ url_for('main.send_reminder', borrow_id=record.id) }}" method="POST" class="d-inline ms-1">
+                      <button type="submit" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-bell me-1"></i>Remind
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+            {% if not has_approved %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-3">No books currently borrowed.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Returned History ===== -->
+  <div id="returnedSection" class="pt-4 mt-2 mb-5">
+    <h4 class="fw-bold mb-3" style="color:var(--primary)">
+      <i class="bi bi-arrow-return-left me-1"></i>Returned Books History
+    </h4>
+    <div class="table-container shadow-sm border rounded bg-white p-3">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>User</th>
+              <th>Book Title</th>
+              <th>Borrow Date</th>
+              <th>Return Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set has_returned = false %}
+            {% for record in borrowed_books %}
+              {% if record.status == 'returned' %}
+                {% set has_returned = true %}
+                <tr>
+                  <td>{{ record.user_name }}</td>
+                  <td>{{ record.book_title }}</td>
+                  <td class="small">{{ record.borrow_date }}</td>
+                  <td class="small text-success fw-bold">{{ record.return_date }}</td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+            {% if not has_returned %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">No return history available.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -94,44 +241,28 @@
           <form id="addBookForm" method="POST" action="{{ url_for('main.add_book') }}" novalidate>
             {{ form.hidden_tag() }}
             <div class="row g-3">
-              <!-- Title -->
               <div class="col-md-6">
                 <label for="bookTitle" class="form-label">Book Title</label>
-                <input type="text" class="form-control" id="bookTitle" name="title"
-                       placeholder="e.g. Introduction to Algorithms" required>
-                <div class="invalid-feedback"></div>
+                <input type="text" class="form-control" id="bookTitle" name="title" required>
               </div>
-              <!-- Author -->
               <div class="col-md-6">
                 <label for="bookAuthor" class="form-label">Author</label>
-                <input type="text" class="form-control" id="bookAuthor" name="author"
-                       placeholder="e.g. Thomas H. Cormen" required>
-                <div class="invalid-feedback"></div>
+                <input type="text" class="form-control" id="bookAuthor" name="author" required>
               </div>
-              <!-- ISBN -->
               <div class="col-md-6">
                 <label for="bookISBN" class="form-label">ISBN</label>
-                <input type="text" class="form-control" id="bookISBN" name="isbn"
-                       placeholder="e.g. 978-0-262-03384-8" required>
-                <div class="invalid-feedback"></div>
+                <input type="text" class="form-control" id="bookISBN" name="isbn" required>
               </div>
-              <!-- Quantity -->
               <div class="col-md-3">
                 <label for="bookQty" class="form-label">Quantity</label>
-                <input type="number" class="form-control" id="bookQty" name="quantity"
-                       min="1" value="1" required>
-                <div class="invalid-feedback"></div>
+                <input type="number" class="form-control" id="bookQty" name="quantity" min="1" value="1" required>
               </div>
-              <!-- Category -->
               <div class="col-md-3">
                 <label for="bookCategory" class="form-label">Category</label>
                 <select class="form-select" id="bookCategory" name="category">
                   <option value="general">General</option>
                   <option value="science">Science</option>
                   <option value="technology">Technology</option>
-                  <option value="literature">Literature</option>
-                  <option value="history">History</option>
-                  <option value="arts">Arts</option>
                 </select>
               </div>
             </div>
@@ -139,237 +270,52 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" form="addBookForm" class="btn btn-accent-custom">
-            <i class="bi bi-save me-1"></i>Save Book
-          </button>
+          <button type="submit" form="addBookForm" class="btn btn-accent-custom">Save Book</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ===== Manage Books Table ===== -->
-  <div id="manageBooksSection" class="pt-4 mt-2">
+  <div id="manageBooksSection" class="pt-4 mt-2 mb-5">
     <h4 class="fw-bold mb-3" style="color:var(--primary)">
-      <i class="bi bi-journal-text me-1"></i>Manage Books
+      <i class="bi bi-journal-text me-1"></i>Manage Catalogue
     </h4>
-
-  <div class="table-container mb-5">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle" id="allBooksTable">
-        <thead>
-          <tr>
-            <th data-sort="id"># <i class="bi bi-arrow-down-up sort-icon"></i></th>
-            <th data-sort="title">Title <i class="bi bi-arrow-down-up sort-icon"></i></th>
-            <th data-sort="author">Author <i class="bi bi-arrow-down-up sort-icon"></i></th>
-            <th data-sort="isbn">ISBN <i class="bi bi-arrow-down-up sort-icon"></i></th>
-            <th data-sort="qty">Qty <i class="bi bi-arrow-down-up sort-icon"></i></th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for book in books %}
-          <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ book.title }}</td>
-            <td>{{ book.author }}</td>
-            <td><code>{{ book.isbn }}</code></td>
-            <td>{{ book.quantity }}</td>
-            <td>
-              <form action="{{ url_for('main.remove_book', book_id=book.id) }}" method="POST" class="d-inline">
-                <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove book" onclick="return confirm('Are you sure you want to remove this book?');">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-
-          {% if not books %}
-          <!-- Sample rows -->
-          <tr>
-            <td>1</td>
-            <td>Introduction to Algorithms</td>
-            <td>Thomas H. Cormen</td>
-            <td><code>978-0-262-03384-8</code></td>
-            <td>5</td>
-            <td>
-              <button class="btn btn-sm btn-outline-danger btn-remove-book"
-                      data-bs-toggle="tooltip" title="Remove book">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Clean Code</td>
-            <td>Robert C. Martin</td>
-            <td><code>978-0-132-35088-4</code></td>
-            <td>3</td>
-            <td>
-              <button class="btn btn-sm btn-outline-danger btn-remove-book"
-                      data-bs-toggle="tooltip" title="Remove book">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>Design Patterns</td>
-            <td>Erich Gamma et al.</td>
-            <td><code>978-0-201-63361-0</code></td>
-            <td>2</td>
-            <td>
-              <button class="btn btn-sm btn-outline-danger btn-remove-book"
-                      data-bs-toggle="tooltip" title="Remove book">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>The Pragmatic Programmer</td>
-            <td>David Thomas</td>
-            <td><code>978-0-135-95705-9</code></td>
-            <td>4</td>
-            <td>
-              <button class="btn btn-sm btn-outline-danger btn-remove-book"
-                      data-bs-toggle="tooltip" title="Remove book">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>Artificial Intelligence: A Modern Approach</td>
-            <td>Stuart Russell</td>
-            <td><code>978-0-134-61099-3</code></td>
-            <td>6</td>
-            <td>
-              <button class="btn btn-sm btn-outline-danger btn-remove-book"
-                      data-bs-toggle="tooltip" title="Remove book">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Pagination -->
-  <nav class="mb-5" aria-label="All books pagination">
-    <ul class="pagination justify-content-center">
-      <li class="page-item disabled"><a class="page-link" href="#">&laquo; Prev</a></li>
-      <li class="page-item active"><a class="page-link" href="#">1</a></li>
-      <li class="page-item"><a class="page-link" href="#">2</a></li>
-      <li class="page-item"><a class="page-link" href="#">3</a></li>
-      <li class="page-item"><a class="page-link" href="#">Next &raquo;</a></li>
-    </ul>
-  </nav>
-
-  <!-- ===== Borrowed Books / Reminders ===== -->
-  <div id="borrowedBooksSection" class="pt-4 mt-2 mb-5">
-    <h4 class="fw-bold mb-3" style="color:var(--primary)">
-      <i class="bi bi-clock-history me-1"></i>Borrowed Books
-    </h4>
-
-    <div class="table-container">
+    <div class="table-container shadow-sm border rounded bg-white p-3">
       <div class="table-responsive">
-        <table class="table table-hover table-striped align-middle" id="borrowedBooksTable">
-          <thead>
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
             <tr>
-              <th data-sort="id"># <i class="bi bi-arrow-down-up sort-icon"></i></th>
-              <th data-sort="member">User Name <i class="bi bi-arrow-down-up sort-icon"></i></th>
-              <th data-sort="book">Book Title <i class="bi bi-arrow-down-up sort-icon"></i></th>
-              <th data-sort="issue">Borrow Date <i class="bi bi-arrow-down-up sort-icon"></i></th>
-              <th data-sort="due">Return Date <i class="bi bi-arrow-down-up sort-icon"></i></th>
+              <th>Title</th>
+              <th>Author</th>
+              <th>ISBN</th>
+              <th>Qty</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {% for record in borrowed_books %}
+            {% for book in books %}
             <tr>
-              <td>{{ loop.index }}</td>
-              <td><span class="fw-medium text-dark">{{ record.user_name }}</span></td>
-              <td>{{ record.book_title }}</td>
-              <td>{{ record.issue_date }}</td>
-              <td>{{ record.due_date }}</td>
+              <td class="fw-bold">{{ book.title }}</td>
+              <td>{{ book.author }}</td>
+              <td><code>{{ book.isbn }}</code></td>
+              <td>{{ book.quantity }}</td>
               <td>
-                <form action="{{ url_for('main.send_reminder', borrow_id=record.id) }}" method="POST" class="d-inline">
-                  <button type="submit" class="btn btn-sm btn-outline-warning">
-                    <i class="bi bi-bell me-1"></i> Send Reminder
+                <form action="{{ url_for('main.remove_book', book_id=book.id) }}" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this book from catalogue?');">
+                    <i class="bi bi-trash"></i>
                   </button>
                 </form>
               </td>
             </tr>
             {% endfor %}
-
-            {% if not borrowed_books %}
-            <!-- Sample rows -->
-            <tr>
-              <td>1</td>
-              <td><span class="fw-medium text-dark">Alice Johnson</span></td>
-              <td>Introduction to Algorithms</td>
-              <td>2026-02-10</td>
-              <td>2026-03-10</td>
-              <td>
-                <button class="btn btn-sm btn-outline-warning btn-send-reminder" data-user="Alice Johnson" data-title="Introduction to Algorithms">
-                  <i class="bi bi-bell me-1"></i> Send Reminder
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td><span class="fw-medium text-dark">Bob Williams</span></td>
-              <td>Clean Code</td>
-              <td>2026-02-20</td>
-              <td>2026-03-20</td>
-              <td>
-                <button class="btn btn-sm btn-outline-warning btn-send-reminder" data-user="Bob Williams" data-title="Clean Code">
-                  <i class="bi bi-bell me-1"></i> Send Reminder
-                </button>
-              </td>
-            </tr>
-            {% endif %}
           </tbody>
         </table>
       </div>
     </div>
-
-    <!-- Pagination -->
-    <nav class="mt-4" aria-label="Borrowed books pagination">
-      <ul class="pagination justify-content-center">
-        <li class="page-item disabled"><a class="page-link" href="#">&laquo; Prev</a></li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">Next &raquo;</a></li>
-      </ul>
-    </nav>
   </div>
 
   </main>
 </div>
-
-<!-- ===== Delete Confirmation Modal ===== -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header border-0 pb-0">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center pt-0 pb-4">
-        <i class="bi bi-exclamation-triangle-fill text-danger display-1 mb-3"></i>
-        <h4 class="fw-bold mb-2">Confirm Deletion</h4>
-        <p class="text-muted mb-0">Are you sure you want to remove <strong id="deleteBookTitle">this book</strong> from the library? This action cannot be undone.</p>
-      </div>
-      <div class="modal-footer bg-light border-0 justify-content-center">
-        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger px-4" id="confirmDeleteBtn"><i class="bi bi-trash me-1"></i>Remove</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 </div>
 {% endblock %}

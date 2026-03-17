@@ -72,7 +72,7 @@
             {% if book.quantity > 0 %}
               <span class="badge bg-success rounded-pill px-3 py-2 fw-medium shadow-sm"><i class="bi bi-check-circle me-1"></i>Available</span>
             {% else %}
-              <span class="badge bg-danger rounded-pill px-3 py-2 fw-medium shadow-sm"><i class="bi bi-x-circle me-1"></i>Issued</span>
+              <span class="badge bg-danger rounded-pill px-3 py-2 fw-medium shadow-sm"><i class="bi bi-x-circle me-1"></i>Borrowed</span>
             {% endif %}
             
             <small class="text-muted"><i class="bi bi-layers text-accent me-1"></i>{{ book.quantity }} left</small>
@@ -81,12 +81,13 @@
           <h5 class="card-title fw-bold text-truncate" title="{{ book.title }}" style="color:var(--primary)">{{ book.title }}</h5>
           <p class="card-text text-muted mb-4 small"><i class="bi bi-person me-1"></i>{{ book.author }}</p>
           
-          <!-- Action Button - Stays at bottom -->
           <div class="mt-auto">
             {% if book.quantity > 0 %}
-              <a href="{{ url_for('main.borrow_book', book_id=book.id) }}" class="btn btn-primary-custom w-100 py-2 shadow-sm">
-                <i class="bi bi-bookmarks me-1"></i> Issue Book
-              </a>
+              <form action="{{ url_for('main.borrow_book', book_id=book.id) }}" method="POST">
+                <button type="submit" class="btn btn-primary-custom w-100 py-2 shadow-sm">
+                  <i class="bi bi-send me-1"></i> Request Book
+                </button>
+              </form>
             {% else %}
               <button class="btn btn-secondary w-100 py-2 shadow-sm" disabled style="background-color: var(--secondary);">
                 <i class="bi bi-calendar-x me-1"></i> Waitlist

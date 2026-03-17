@@ -27,4 +27,28 @@ app = create_app()
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        
+        # Ensure default admin exists with correct password
+        from models import User
+        admin = User.query.filter_by(email="admin@gmail.com").first()
+        hashed_pw = bcrypt.generate_password_hash("12345678").decode('utf-8')
+        
+        if not admin:
+            admin_user = User(
+                name="Admin",
+                email="admin@gmail.com",
+                password=hashed_pw,
+                phone="0000000000",
+                role="admin"
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+            print("Default admin created!")
+        else:
+            # Update password if it's different (optional but recommended here for the user's fix)
+            admin.password = hashed_pw
+            admin.role = 'admin'  # Ensure role is also correct
+            db.session.commit()
+            print("Admin credentials verified/updated.")
+            
     app.run(debug=True, port=5000)

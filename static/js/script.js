@@ -260,10 +260,10 @@ $(function () {
     }, 800);
   });
 
-  // Confirm issuing a book
-  $(document).on('click', '.btn-issue-book', function (e) {
+  // Confirm borrow request
+  $(document).on('click', '.btn-request-book', function (e) {
     var title = $(this).data('title');
-    if (confirm('Are you sure you want to issue "' + title + '"?')) {
+    if (confirm('Are you sure you want to request to borrow "' + title + '"?')) {
       // Typically an ajax call or form submission would happen here.
       // For this static preview, we'll just show an alert or redirect to the success page.
       window.location.href = '/success';

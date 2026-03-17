@@ -9,7 +9,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='user') # 'user' or 'admin'
+    role = db.Column(db.String(10), default='user') # 'user' or 'admin'
     
     # Relationship with BorrowedBooks
     borrowed_books = db.relationship('BorrowedBook', backref='borrower', lazy=True)
@@ -37,9 +37,10 @@ class BorrowedBook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
-    borrow_date = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    requested_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    borrow_date = db.Column(db.DateTime, nullable=True)
     return_date = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(20), nullable=False, default='borrowed') # 'borrowed' or 'returned'
+    status = db.Column(db.String(20), nullable=False, default='pending') # 'pending', 'approved', 'rejected', 'returned'
 
     def __repr__(self):
         return f"BorrowedBook(User ID: {self.user_id}, Book ID: {self.book_id}, Status: {self.status})"
