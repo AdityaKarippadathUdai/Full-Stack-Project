@@ -284,6 +284,7 @@
             <tr>
               <th>Title</th>
               <th>Author</th>
+              <th>Category</th>
               <th>ISBN</th>
               <th>Qty</th>
               <th>Action</th>
@@ -294,6 +295,7 @@
             <tr>
               <td class="fw-bold">{{ book.title }}</td>
               <td>{{ book.author }}</td>
+              <td><span class="badge bg-light text-dark border shadow-sm">{{ book.category }}</span></td>
               <td><code>{{ book.isbn }}</code></td>
               <td>{{ book.quantity }}</td>
               <td>

@@ -292,7 +292,7 @@ $(function () {
       var $item = $(this);
       var itemTitle = $item.data('title') || "";
       var itemAuthor = $item.data('author') || "";
-      var itemCategory = $item.data('category') || "";
+      var itemCategory = ($item.data('category') || "").toString().toLowerCase();
 
       // Check category match
       var categoryMatch = (category === 'all' || itemCategory === category);
