@@ -199,12 +199,16 @@ $(function () {
   });
 
   /* =================================================================
-     PAGINATION (visual active toggle)
+     PAGINATION — do NOT intercept pagination link clicks.
+     Links have real href values built by the server; let the browser
+     navigate naturally. Only update the active highlight after click.
      ================================================================= */
-  $('.pagination .page-link').on('click', function (e) {
-    e.preventDefault();
+  $(document).on('click', '.pagination .page-link', function () {
+    // Skip disabled items
+    if ($(this).closest('.page-item').hasClass('disabled')) return;
     $(this).closest('.pagination').find('.page-item').removeClass('active');
     $(this).closest('.page-item').addClass('active');
+    // Do NOT call e.preventDefault() — the browser must follow the href
   });
 
   /* =================================================================
@@ -320,9 +324,10 @@ $(function () {
     }, 310);
   }
 
-  // Bind events for filtering
+  // Title search triggers within-page filter only
   $searchInput.on('keyup', filterCatalog);
-  $categoryFilter.on('change', filterCatalog);
+  // Category change is handled by the <form> submission (onchange="this.form.submit()")
+  // so we do NOT bind filterCatalog to the category dropdown here
 
   // Auto-dismiss alerts after 5 s
   setTimeout(function () {

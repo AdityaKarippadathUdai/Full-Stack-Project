@@ -106,8 +106,33 @@ def dashboard():
 
 @main.route("/books")
 def books():
-    all_books = Book.query.all()
-    return render_template("books.html", books=all_books)
+    PER_PAGE = 16
+    page     = request.args.get('page', 1, type=int)
+    category = request.args.get('category', 'all').strip()
+
+    if page < 1:
+        page = 1
+
+    # 1. Build base query — apply category filter BEFORE paginating
+    query = Book.query.order_by(Book.title)
+    if category and category != 'all':
+        query = query.filter(Book.category == category)
+
+    # 2. Paginate the already-filtered queryset
+    pagination = query.paginate(page=page, per_page=PER_PAGE, error_out=False)
+
+    # 3. Clamp out-of-bounds page to the last valid page
+    if page > pagination.pages and pagination.pages > 0:
+        return redirect(url_for('main.books', page=pagination.pages, category=category))
+
+    return render_template(
+        "books.html",
+        books=pagination.items,
+        pagination=pagination,
+        page=page,
+        per_page=PER_PAGE,
+        active_category=category,
+    )
 
 @main.route("/borrow/<int:book_id>", methods=['POST'])
 @login_required

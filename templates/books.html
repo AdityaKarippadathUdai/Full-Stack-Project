@@ -18,31 +18,34 @@
     </p>
   </div>
 
-  <!-- Filter Bar -->
-  <div class="card shadow-sm mb-5 border-0 bg-white">
-    <div class="card-body p-4">
-      <div class="row g-3 align-items-center">
-        <!-- Search Input -->
-        <div class="col-md-7 h-100">
-          <div class="input-group input-group-lg h-100 shadow-sm border" style="border-radius: var(--radius)">
-            <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
-            <input type="text" class="form-control border-0 shadow-none ps-0" id="catalogSearch" placeholder="Search by title or author...">
+  <!-- Filter Bar — submits as GET so category is in the URL -->
+  <form method="GET" action="{{ url_for('main.books') }}" id="filterForm">
+    <div class="card shadow-sm mb-5 border-0 bg-white">
+      <div class="card-body p-4">
+        <div class="row g-3 align-items-center">
+          <!-- Client-side title search (filters within current page) -->
+          <div class="col-md-7 h-100">
+            <div class="input-group input-group-lg h-100 shadow-sm border" style="border-radius: var(--radius)">
+              <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" class="form-control border-0 shadow-none ps-0" id="catalogSearch" placeholder="Search by title or author...">
+            </div>
           </div>
-        </div>
-        <!-- Category Dropdown -->
-        <div class="col-md-5 h-100">
-          <select class="form-select form-select-lg h-100 shadow-sm border" id="catalogCategory" style="border-radius: var(--radius)">
-            <option value="all" selected>All Categories</option>
-            <option value="Technology">Technology</option>
-            <option value="Arts">Arts</option>
-            <option value="Literature">Literature</option>
-            <option value="Science">Science</option>
-            <option value="History">History</option>
-          </select>
+          <!-- Category dropdown — submits to backend on change -->
+          <div class="col-md-5 h-100">
+            <select class="form-select form-select-lg h-100 shadow-sm border" name="category" id="catalogCategory"
+                    style="border-radius: var(--radius)" onchange="this.form.submit()">
+              <option value="all" {{ 'selected' if active_category == 'all' else '' }}>All Categories</option>
+              <option value="Technology" {{ 'selected' if active_category == 'Technology' else '' }}>Technology</option>
+              <option value="Arts"       {{ 'selected' if active_category == 'Arts'       else '' }}>Arts</option>
+              <option value="Literature" {{ 'selected' if active_category == 'Literature' else '' }}>Literature</option>
+              <option value="Science"    {{ 'selected' if active_category == 'Science'    else '' }}>Science</option>
+              <option value="History"    {{ 'selected' if active_category == 'History'    else '' }}>History</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </form>
 
   <!-- Books Grid -->
   <div class="row row-cols-1 row-cols-md-3 row-cols-xl-4 g-4" id="booksGrid">
@@ -128,16 +131,43 @@
     <p class="text-muted">Try adjusting your search terms or category filters to find what you're looking for.</p>
   </div>
 
-  <!-- Pagination -->
+  <!-- Pagination — only visible when more than one page exists -->
+  {% if pagination.pages > 1 %}
   <nav class="mt-5 pt-3" aria-label="Books navigation">
     <ul class="pagination justify-content-center pagination-lg shadow-sm" style="border-radius: var(--radius)">
-      <li class="page-item disabled"><a class="page-link border-0" href="#">&laquo; Prev</a></li>
-      <li class="page-item active"><a class="page-link border-0" href="#">1</a></li>
-      <li class="page-item"><a class="page-link border-0" href="#">2</a></li>
-      <li class="page-item"><a class="page-link border-0" href="#">3</a></li>
-      <li class="page-item"><a class="page-link border-0" href="#">Next &raquo;</a></li>
+
+      <!-- Prev -->
+      <li class="page-item {{ 'disabled' if not pagination.has_prev else '' }}">
+        <a class="page-link border-0"
+           href="{{ url_for('main.books', page=pagination.prev_num, category=active_category) if pagination.has_prev else '#' }}"
+           aria-label="Previous">&laquo; Prev</a>
+      </li>
+
+      <!-- Dynamic page numbers with ellipsis -->
+      {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+          <li class="page-item {{ 'active' if p == page else '' }}">
+            <a class="page-link border-0" href="{{ url_for('main.books', page=p, category=active_category) }}">{{ p }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link border-0">&hellip;</span></li>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Next -->
+      <li class="page-item {{ 'disabled' if not pagination.has_next else '' }}">
+        <a class="page-link border-0"
+           href="{{ url_for('main.books', page=pagination.next_num, category=active_category) if pagination.has_next else '#' }}"
+           aria-label="Next">Next &raquo;</a>
+      </li>
+
     </ul>
+    <p class="text-center text-muted small mt-2">
+      Page {{ page }} of {{ pagination.pages }} &mdash; {{ pagination.total }} books
+      {% if active_category != 'all' %}in <strong>{{ active_category }}</strong>{% endif %}
+    </p>
   </nav>
+  {% endif %}
 
 </div>
 {% endblock %}
