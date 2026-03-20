@@ -15,7 +15,7 @@
           Discover thousands of books at your fingertips. Manage your reading journey with ease and elegance.
         </p>
         <div class="d-grid gap-3 d-sm-flex justify-content-sm-center animate__animated animate__fadeInUp animate__delay-2s">
-          <a href="#books" class="btn btn-accent-custom btn-lg px-5 shadow">
+          <a href="{{ url_for('main.books') }}" class="btn btn-accent-custom btn-lg px-5 shadow">
             <i class="bi bi-search me-2"></i>Browse Books
           </a>
           <a href="{{ url_for('main.register') }}" class="btn btn-outline-light btn-lg px-5">
