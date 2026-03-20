@@ -17,6 +17,18 @@
   <!-- Custom CSS -->
   <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 
+  <!-- Prevent flash: apply dark mode before first paint -->
+  <script>
+    (function() {
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.documentElement.classList.add('dark-mode-preload');
+      }
+    })();
+  </script>
+  <style>
+    .dark-mode-preload body { visibility: hidden; }
+  </style>
+
   {% block head %}{% endblock %}
 </head>
 
@@ -72,6 +84,19 @@
 
           <!-- Right‑side auth links -->
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-1">
+
+            <!-- === Dark Mode Toggle === -->
+            <li class="nav-item me-1">
+              <label class="dark-mode-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+                <i class="bi bi-sun-fill toggle-icon" id="toggleIconSun"></i>
+                <span class="toggle-switch">
+                  <input type="checkbox" id="darkModeToggle" aria-label="Dark mode">
+                  <span class="toggle-track"></span>
+                </span>
+                <i class="bi bi-moon-fill toggle-icon" id="toggleIconMoon"></i>
+              </label>
+            </li>
+
             {% if current_user.is_authenticated %}
               <li class="nav-item">
                 <span class="nav-link text-light"><i class="bi bi-person-circle me-1"></i>{{ current_user.name }}</span>
@@ -161,5 +186,37 @@
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
   {% block scripts %}{% endblock %}
+
+  <!-- Dark Mode Script -->
+  <script>
+    (function () {
+      const toggle   = document.getElementById('darkModeToggle');
+      const body     = document.body;
+      const sunIcon  = document.getElementById('toggleIconSun');
+      const moonIcon = document.getElementById('toggleIconMoon');
+      const STORAGE_KEY = 'darkMode';
+
+      function applyDark(isDark) {
+        body.classList.toggle('dark-mode', isDark);
+        toggle.checked = isDark;
+        sunIcon.style.opacity  = isDark ? '0.4' : '1';
+        moonIcon.style.opacity = isDark ? '1'   : '0.4';
+        localStorage.setItem(STORAGE_KEY, isDark);
+      }
+
+      // Restore preference on load
+      var saved = localStorage.getItem(STORAGE_KEY) === 'true';
+      applyDark(saved);
+
+      // Make body visible now that the correct class is applied
+      document.documentElement.classList.remove('dark-mode-preload');
+      body.style.visibility = '';
+
+      // Listen for toggle clicks
+      toggle.addEventListener('change', function () {
+        applyDark(toggle.checked);
+      });
+    })();
+  </script>
 </body>
 </html>
