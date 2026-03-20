@@ -40,6 +40,11 @@
               <i class="bi bi-arrow-return-left me-2"></i>Returned Books
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#manageUsersSection">
+              <i class="bi bi-people me-2"></i>Manage Users
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
@@ -323,4 +328,108 @@
   </main>
 </div>
 </div>
+
+<!-- ===== Manage Users Section ===== -->
+<div class="container-fluid px-md-4">
+  <div id="manageUsersSection" class="pt-4 mt-2 mb-5">
+    <h4 class="fw-bold mb-3" style="color:var(--primary)">
+      <i class="bi bi-people me-1"></i>Manage Users
+    </h4>
+
+    <!-- Live search -->
+    <div class="mb-3 d-flex gap-2 align-items-center">
+      <div class="input-group" style="max-width:360px">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" id="userSearchInput" class="form-control" placeholder="Search by name or email…">
+      </div>
+      <span class="text-muted small" id="userCount">{{ users_data | length }} user(s)</span>
+    </div>
+
+    <div class="table-container shadow-sm border rounded p-3 glass-card" style="background: rgba(255, 255, 255, 0.9);">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="usersTable">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Active Loans</th>
+              <th>Total Requests</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users_data %}
+            <tr class="user-row">
+              <td class="text-muted small">{{ u.id }}</td>
+              <td>
+                <span class="fw-medium user-name">{{ u.name }}</span>
+              </td>
+              <td class="user-email">{{ u.email }}</td>
+              <td class="text-muted small">{{ u.phone }}</td>
+              <td>
+                {% if u.active > 0 %}
+                  <span class="badge bg-warning text-dark rounded-pill px-3">
+                    <i class="bi bi-book me-1"></i>{{ u.active }} active
+                  </span>
+                {% else %}
+                  <span class="text-muted small">None</span>
+                {% endif %}
+              </td>
+              <td class="text-muted small">{{ u.total }}</td>
+              <td>
+                {% if u.active > 0 %}
+                  <button class="btn btn-sm btn-outline-secondary" disabled title="User has active borrowed books">
+                    <i class="bi bi-person-x me-1"></i>Cannot Remove
+                  </button>
+                {% else %}
+                  <form action="{{ url_for('main.remove_user', user_id=u.id) }}" method="POST" class="d-inline"
+                        onsubmit="return confirm('Permanently remove {{ u.name }}? This action cannot be undone.')">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                      <i class="bi bi-person-x me-1"></i>Remove
+                    </button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+            {% if not users_data %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                <i class="bi bi-people display-4 d-block mb-2 opacity-25"></i>
+                No registered users found.
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Live user search
+const searchInput = document.getElementById('userSearchInput');
+const rows        = document.querySelectorAll('#usersTable .user-row');
+const countEl     = document.getElementById('userCount');
+
+if (searchInput) {
+  searchInput.addEventListener('input', function () {
+    const q = this.value.toLowerCase().trim();
+    let visible = 0;
+    rows.forEach(row => {
+      const name  = row.querySelector('.user-name')?.textContent.toLowerCase() || '';
+      const email = row.querySelector('.user-email')?.textContent.toLowerCase() || '';
+      const match = name.includes(q) || email.includes(q);
+      row.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    countEl.textContent = visible + ' user(s)';
+  });
+}
+</script>
 {% endblock %}

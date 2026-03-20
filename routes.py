@@ -220,6 +220,24 @@ def admin_dashboard():
                 "last_reminder_at": record.last_reminder_at.strftime('%Y-%m-%d %H:%M') if record.last_reminder_at else 'Never'
             })
     
+    # All users (exclude admins for the manage-users table)
+    all_users = User.query.filter_by(role='user').order_by(User.name).all()
+
+    # Annotate each user with their active borrow count
+    users_data = []
+    for u in all_users:
+        active = BorrowedBook.query.filter_by(user_id=u.id, status='approved').count()
+        total  = BorrowedBook.query.filter_by(user_id=u.id).count()
+        users_data.append({
+            'id':      u.id,
+            'name':    u.name,
+            'email':   u.email,
+            'phone':   u.phone,
+            'role':    u.role,
+            'active':  active,
+            'total':   total,
+        })
+
     # We will need the AddBookForm to pass to template or we can just redirect to a separate add-book page.
     form = AddBookForm()
     
@@ -230,6 +248,7 @@ def admin_dashboard():
                            available_books=available_qty,
                            total_borrowed=total_borrowed,
                            total_users=total_users,
+                           users_data=users_data,
                            form=form)
 
 def save_picture(form_picture):
@@ -286,6 +305,48 @@ def remove_book(book_id):
         db.session.commit()
         flash('Book removed successfully!', 'success')
     return redirect(url_for('main.admin_dashboard'))
+
+
+@main.route("/admin/remove_user/<int:user_id>", methods=['POST'])
+@login_required
+@admin_required
+def remove_user(user_id):
+    """Safely remove a regular user. Blocked if they have active borrowed books."""
+    target = User.query.get_or_404(user_id)
+
+    # Guard: cannot delete yourself
+    if target.id == current_user.id:
+        flash("You cannot remove your own account.", 'danger')
+        return redirect(url_for('main.admin_dashboard') + '#manageUsersSection')
+
+    # Guard: cannot delete another admin
+    if target.role == 'admin':
+        flash("Admin accounts cannot be removed.", 'danger')
+        return redirect(url_for('main.admin_dashboard') + '#manageUsersSection')
+
+    # Guard: block if user has active (approved, not returned) loans
+    active_loans = BorrowedBook.query.filter_by(
+        user_id=target.id, status='approved'
+    ).count()
+    if active_loans > 0:
+        flash(
+            f'Cannot remove "{target.name}" — they currently have {active_loans} '
+            f'active borrowed book(s). Ask them to return the book(s) first.',
+            'warning'
+        )
+        return redirect(url_for('main.admin_dashboard') + '#manageUsersSection')
+
+    # Safe to delete: clean up related data first
+    # 1. Delete all borrow records (pending / rejected / returned only at this point)
+    BorrowedBook.query.filter_by(user_id=target.id).delete()
+    # 2. Delete all notifications
+    Notification.query.filter_by(user_id=target.id).delete()
+    # 3. Delete the user
+    db.session.delete(target)
+    db.session.commit()
+
+    flash(f'User "{target.name}" has been removed successfully.', 'success')
+    return redirect(url_for('main.admin_dashboard') + '#manageUsersSection')
 
 @main.route("/admin/send_reminder/<int:borrow_id>", methods=['POST', 'GET'])
 @login_required
