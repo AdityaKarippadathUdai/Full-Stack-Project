@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from config import DevelopmentConfig
 from extensions import db, bcrypt, login_manager, mail
@@ -77,4 +78,8 @@ if __name__ == '__main__':
             db.session.commit()
             print("Admin credentials verified/updated.")
             
-    app.run(debug=True, port=5000)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=False
+    )
