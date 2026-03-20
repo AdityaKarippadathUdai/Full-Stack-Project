@@ -509,32 +509,112 @@ body.dark-mode .glass-container {
   border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Tables */
+/* ── Tables (Bootstrap 5 uses --bs-table-* custom properties internally) ── */
+
+/* Base table — override Bootstrap's own CSS vars */
 body.dark-mode .table {
-  color: var(--text);
-  border-color: var(--border);
+  --bs-table-bg:              #1e2330;
+  --bs-table-color:           #e8ecf0;
+  --bs-table-border-color:    #2e3748;
+  --bs-table-striped-bg:      #22293a;
+  --bs-table-striped-color:   #e8ecf0;
+  --bs-table-hover-bg:        rgba(127, 187, 234, 0.09);
+  --bs-table-hover-color:     #e8ecf0;
+  --bs-table-active-bg:       rgba(127, 187, 234, 0.15);
+  --bs-table-active-color:    #e8ecf0;
+  color: #e8ecf0;
+  border-color: #2e3748;
 }
 
+/* Table wrapper / container */
+body.dark-mode .table-container,
+body.dark-mode .table-responsive {
+  background: #1e2330 !important;
+  border-color: #2e3748 !important;
+}
+
+/* Force every cell — td and th — dark */
+body.dark-mode .table > :not(caption) > * > * {
+  background-color: #1e2330 !important;
+  color: #e8ecf0 !important;
+  border-color: #2e3748 !important;
+}
+
+/* thead row */
+body.dark-mode .table > thead > tr > th,
 body.dark-mode .table thead th {
-  background-color: #0d1117;
+  background-color: #0d1117 !important;
+  color: var(--primary) !important;
+  border-color: #2e3748 !important;
+}
+
+/* .table-light class (Bootstrap uses it on thead) */
+body.dark-mode .table-light,
+body.dark-mode .table-light > td,
+body.dark-mode .table-light > th {
+  --bs-table-bg:           #161c2a !important;
+  --bs-table-color:        #95a3b5 !important;
+  --bs-table-border-color: #2e3748 !important;
+  background-color: #161c2a !important;
+  color: #95a3b5 !important;
+}
+
+/* Every <tr> inside thead that carries .table-light */
+body.dark-mode thead.table-light tr,
+body.dark-mode thead.table-light tr th {
+  background-color: #161c2a !important;
+  color: #95a3b5 !important;
+  border-color: #2e3748 !important;
+}
+
+/* tbody rows — odd/even alternation */
+body.dark-mode .table tbody tr {
+  background-color: #1e2330 !important;
+}
+
+body.dark-mode .table tbody tr:nth-child(even) {
+  background-color: #22293a !important;
+}
+
+/* tbody cells */
+body.dark-mode .table tbody td,
+body.dark-mode .table tbody th {
+  background-color: inherit !important;
+  color: #e8ecf0 !important;
+  border-color: #2e3748 !important;
+}
+
+/* Hover row */
+body.dark-mode .table-hover > tbody > tr:hover,
+body.dark-mode .table-hover > tbody > tr:hover > td,
+body.dark-mode .table-hover > tbody > tr:hover > th {
+  --bs-table-hover-bg: rgba(127, 187, 234, 0.09);
+  background-color: rgba(127, 187, 234, 0.09) !important;
+  color: #e8ecf0 !important;
+}
+
+/* Status badges inside tables stay readable */
+body.dark-mode .table .badge.bg-warning  { color: #12151a !important; }
+body.dark-mode .table .badge.bg-success  { color: #fff !important; }
+body.dark-mode .table .badge.bg-primary  { color: #fff !important; }
+body.dark-mode .table .badge.bg-danger   { color: #fff !important; }
+body.dark-mode .table .badge.bg-info     { color: #12151a !important; }
+
+/* Inline buttons inside table cells */
+body.dark-mode .table td .btn-sm        { opacity: .92; }
+body.dark-mode .table td .btn-sm:hover  { opacity: 1; }
+
+/* code tags (e.g. ISBN column) */
+body.dark-mode .table td code {
+  background: rgba(127, 187, 234, 0.12);
   color: var(--primary);
-  border-color: var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
-body.dark-mode .table-light {
-  background-color: #1a2035 !important;
-  color: var(--text-muted) !important;
-}
-
-body.dark-mode .table tbody td {
-  border-color: var(--border);
-  color: var(--text);
-}
-
-body.dark-mode .table-hover > tbody > tr:hover > * {
-  background-color: rgba(127, 187, 234, 0.07);
-  color: var(--text);
-}
+/* fw-medium / fw-bold text in cells */
+body.dark-mode .table .fw-medium,
+body.dark-mode .table .fw-bold { color: #e8ecf0 !important; }
 
 /* Forms */
 body.dark-mode .form-control,

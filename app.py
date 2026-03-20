@@ -1,6 +1,6 @@
 from flask import Flask
 from config import DevelopmentConfig
-from extensions import db, bcrypt, login_manager
+from extensions import db, bcrypt, login_manager, mail
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
@@ -10,6 +10,7 @@ def create_app(config_class=DevelopmentConfig):
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
+    mail.init_app(app)
 
     with app.app_context():
         # Import and register Blueprints
@@ -18,6 +19,31 @@ def create_app(config_class=DevelopmentConfig):
         
         # Import models to ensure they are registered
         import models
+
+    # ── Background Scheduler (auto-reminders) ────────────────────────────────
+    # Guard: Flask's dev reloader launches two processes; only start in the
+    # main process (or in production where WERKZEUG_RUN_MAIN is absent).
+    import os
+    if not app.config.get('TESTING') and os.environ.get('WERKZEUG_RUN_MAIN') != 'false':
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from apscheduler.triggers.interval import IntervalTrigger
+        from scheduler import send_auto_reminders
+        import atexit
+
+        scheduler = BackgroundScheduler(daemon=True)
+        scheduler.add_job(
+            func=send_auto_reminders,
+            args=[app],
+            trigger=IntervalTrigger(hours=6),
+            id='auto_reminder_job',
+            name='Send overdue book reminders',
+            replace_existing=True
+        )
+        scheduler.start()
+        # Ensure scheduler shuts down when the app exits
+        atexit.register(lambda: scheduler.shutdown(wait=False))
+        app.logger.info("✅ Auto-reminder scheduler started (every 6 hours).")
+    # ─────────────────────────────────────────────────────────────────────────
 
     return app
 

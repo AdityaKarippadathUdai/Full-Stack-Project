@@ -1,8 +1,9 @@
 from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, current_app
 from flask_login import login_user, current_user, logout_user, login_required
-from extensions import db, bcrypt, login_manager
-from models import User, Book, BorrowedBook
+from extensions import db, bcrypt, login_manager, mail
+from models import User, Book, BorrowedBook, Notification
 from forms import RegisterForm, LoginForm, AddBookForm, BorrowBookForm
+from flask_mail import Message as MailMessage
 from datetime import datetime, timedelta, timezone
 import os
 import secrets
@@ -80,6 +81,12 @@ def dashboard():
         return redirect(url_for('main.admin_dashboard'))
     
     borrowed_books = BorrowedBook.query.filter_by(user_id=current_user.id).all()
+
+    # Unread notifications for the dashboard panel (latest 5)
+    recent_notifications = Notification.query\
+        .filter_by(user_id=current_user.id, is_read=False)\
+        .order_by(Notification.created_at.desc())\
+        .limit(5).all()
     
     user_stats = {
         "name": current_user.name,
@@ -89,7 +96,13 @@ def dashboard():
     }
     
     books = Book.query.all()
-    return render_template("dashboard.html", user=user_stats, borrowed_books=borrowed_books, books=books)
+    return render_template(
+        "dashboard.html",
+        user=user_stats,
+        borrowed_books=borrowed_books,
+        books=books,
+        recent_notifications=recent_notifications
+    )
 
 @main.route("/books")
 def books():
@@ -279,22 +292,130 @@ def remove_book(book_id):
 @admin_required
 def send_reminder(borrow_id):
     borrow_record = BorrowedBook.query.get_or_404(borrow_id)
-    
+
     if borrow_record.status != 'approved':
         flash('Reminders can only be sent for approved books.', 'warning')
         return redirect(url_for('main.admin_dashboard'))
-        
+
     user = User.query.get(borrow_record.user_id)
     book = Book.query.get(borrow_record.book_id)
-    
-    if user and book:
-        # Update system state
-        borrow_record.last_reminder_at = datetime.now(timezone.utc)
-        db.session.commit()
-        
-        # In a real app, this would send an email
-        flash(f"Reminder email sent to {user.email} for '{book.title}'.", 'success')
-    else:
+
+    if not (user and book):
         flash("Could not send reminder. User or Book not found.", "danger")
-    
+        return redirect(url_for('main.admin_dashboard'))
+
+    # --- Build contextual message ---
+    now = datetime.now(timezone.utc)
+    return_dt = borrow_record.return_date
+    if return_dt:
+        # Make return_dt timezone-aware if it isn't
+        if return_dt.tzinfo is None:
+            from datetime import timezone as _tz
+            return_dt = return_dt.replace(tzinfo=_tz.utc)
+        days_left = (return_dt - now).days
+        if days_left < 0:
+            status_msg = f"This book is <strong>overdue by {abs(days_left)} day(s)</strong>. Please return it immediately."
+            subject_tag = "OVERDUE"
+        elif days_left <= 3:
+            status_msg = f"This book is <strong>due in {days_left} day(s)</strong>. Please arrange to return it soon."
+            subject_tag = "Due Soon"
+        else:
+            status_msg = f"This book is due on <strong>{return_dt.strftime('%d %b %Y')}</strong>."
+            subject_tag = "Reminder"
+        return_date_str = return_dt.strftime('%d %b %Y')
+    else:
+        status_msg = "Please return the book at your earliest convenience."
+        subject_tag = "Reminder"
+        return_date_str = "N/A"
+
+    notification_text = (
+        f"Library Reminder: '{book.title}' — return date {return_date_str}. "
+        f"{status_msg.replace('<strong>', '').replace('</strong>', '')}"
+    )
+
+    # --- 1. In-App Notification ---
+    notif = Notification(user_id=user.id, message=notification_text)
+    db.session.add(notif)
+
+    # --- 2. Update reminder timestamp + count ---
+    borrow_record.last_reminder_at = now
+    borrow_record.reminder_count   = (borrow_record.reminder_count or 0) + 1
+
+    db.session.commit()
+
+    # --- 3. Email Notification (best-effort) ---
+    email_sent = False
+    if current_app.config.get('MAIL_USERNAME'):
+        try:
+            html_body = f"""
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">
+              <div style="background:#2c3e50;padding:20px;text-align:center">
+                <h2 style="color:#f4d03f;margin:0">📚 Smart Library</h2>
+                <p style="color:#aab8c8;margin:6px 0 0">Book Return Reminder</p>
+              </div>
+              <div style="padding:30px">
+                <p style="font-size:16px">Hello <strong>{user.name}</strong>,</p>
+                <p>This is a reminder about a book you have borrowed from Smart Library.</p>
+                <table style="width:100%;border-collapse:collapse;margin:20px 0">
+                  <tr style="background:#f8f9fa">
+                    <td style="padding:10px;font-weight:bold;width:40%">Book Title</td>
+                    <td style="padding:10px">{book.title}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:10px;font-weight:bold">Author</td>
+                    <td style="padding:10px">{book.author}</td>
+                  </tr>
+                  <tr style="background:#f8f9fa">
+                    <td style="padding:10px;font-weight:bold">Return Date</td>
+                    <td style="padding:10px">{return_date_str}</td>
+                  </tr>
+                </table>
+                <p style="background:#fff3cd;border-left:4px solid #f4d03f;padding:12px;border-radius:4px">
+                  {status_msg}
+                </p>
+                <p style="color:#6c757d;font-size:13px">If you have already returned this book, please disregard this message.</p>
+              </div>
+              <div style="background:#f8f9fa;padding:15px;text-align:center;color:#aaa;font-size:12px">
+                Smart Library &mdash; Automated Reminder
+              </div>
+            </div>
+            """
+            msg = MailMessage(
+                subject=f"[Smart Library – {subject_tag}] Return reminder for '{book.title}'",
+                recipients=[user.email],
+                html=html_body
+            )
+            mail.send(msg)
+            email_sent = True
+        except Exception as e:
+            current_app.logger.error(f"Reminder email failed for user {user.id}: {e}")
+
+    if email_sent:
+        flash(f"Reminder sent to {user.name} ({user.email}) successfully.", 'success')
+    else:
+        flash(f"In-app notification sent to {user.name}. (Configure MAIL_USERNAME in .env to also send email)", 'success')
+
     return redirect(url_for('main.admin_dashboard'))
+
+
+# ===== User Notifications =====
+@main.route("/notifications")
+@login_required
+def notifications():
+    if current_user.role == 'admin':
+        return redirect(url_for('main.admin_dashboard'))
+    user_notifications = Notification.query.filter_by(user_id=current_user.id)\
+        .order_by(Notification.created_at.desc()).all()
+    # Mark all as read
+    Notification.query.filter_by(user_id=current_user.id, is_read=False).update({'is_read': True})
+    db.session.commit()
+    return render_template('notifications.html', notifications=user_notifications)
+
+
+@main.app_context_processor
+def inject_notification_count():
+    if current_user.is_authenticated and current_user.role == 'user':
+        count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
+    else:
+        count = 0
+    return {'unread_notification_count': count}

@@ -43,6 +43,20 @@ class BorrowedBook(db.Model):
     return_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), nullable=False, default='pending') # 'pending', 'approved', 'rejected', 'returned'
     last_reminder_at = db.Column(db.DateTime, nullable=True)
+    reminder_count   = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
         return f"BorrowedBook(User ID: {self.user_id}, Book ID: {self.book_id}, Status: {self.status})"
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    message    = db.Column(db.Text, nullable=False)
+    is_read    = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', backref=db.backref('notifications', lazy='dynamic'))
+
+    def __repr__(self):
+        return f"Notification(User: {self.user_id}, Read: {self.is_read})"

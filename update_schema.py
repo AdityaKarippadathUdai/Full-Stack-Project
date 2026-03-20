@@ -49,6 +49,49 @@ def update_schema():
             else:
                 logger.info("ℹ️ Column 'last_reminder_at' already exists.")
 
+            # 3. Create notifications table
+            logger.info("Checking for 'notifications' table...")
+            check_notif_sql = text("""
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_name='notifications';
+            """)
+            result = db.session.execute(check_notif_sql).fetchone()
+
+            if not result:
+                logger.info("Creating 'notifications' table...")
+                db.session.execute(text("""
+                    CREATE TABLE notifications (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL REFERENCES users(id),
+                        message TEXT NOT NULL,
+                        is_read BOOLEAN NOT NULL DEFAULT FALSE,
+                        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    );
+                """))
+                db.session.commit()
+                logger.info("✅ Table 'notifications' created.")
+            else:
+                logger.info("ℹ️ Table 'notifications' already exists.")
+
+            # 4. Add reminder_count to borrowed_books
+            logger.info("Checking for 'reminder_count' in 'borrowed_books' table...")
+            check_count_sql = text("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name='borrowed_books' AND column_name='reminder_count';
+            """)
+            result = db.session.execute(check_count_sql).fetchone()
+            if not result:
+                logger.info("Adding 'reminder_count' to 'borrowed_books'...")
+                db.session.execute(text(
+                    "ALTER TABLE borrowed_books ADD COLUMN reminder_count INTEGER NOT NULL DEFAULT 0;"
+                ))
+                db.session.commit()
+                logger.info("✅ Column 'reminder_count' added.")
+            else:
+                logger.info("ℹ️ Column 'reminder_count' already exists.")
+
             print("\n🚀 Database schema update complete!")
             
         except Exception as e:

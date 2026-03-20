@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% set active_page = 'notifications' %}
+
+{% block title %}My Notifications — LibraHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div class="glass-container p-3 rounded shadow-sm">
+      <h2 class="section-title mb-0">
+        <i class="bi bi-bell-fill me-2"></i>My Notifications
+      </h2>
+      <p class="text-muted mt-2 mb-0">Reminders and updates from the library.</p>
+    </div>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary btn-sm rounded-pill shadow-sm ms-auto mt-3 mt-md-0">
+      <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+  </div>
+
+  <div class="table-container glass-container border-0 shadow-lg p-0 overflow-hidden" style="background: rgba(255,255,255,0.95);">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light opacity-75">
+          <tr>
+            <th style="width:60px;"></th>
+            <th>Message</th>
+            <th style="width:180px;">Received</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for notif in notifications %}
+          <tr>
+            <td class="text-center">
+              <i class="bi bi-bell{{ '' if notif.is_read else '-fill text-warning' }} fs-5"></i>
+            </td>
+            <td>{{ notif.message }}</td>
+            <td class="text-muted small">
+              {{ notif.created_at.strftime('%d %b %Y, %H:%M') if notif.created_at else 'N/A' }}
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if not notifications %}
+          <tr>
+            <td colspan="3" class="text-center py-5 text-muted">
+              <i class="bi bi-bell-slash display-4 d-block mb-3 opacity-25"></i>
+              No notifications yet.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

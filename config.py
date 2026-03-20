@@ -11,6 +11,14 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'default-dev-secret-key')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Flask-Mail (Gmail SMTP)
+    MAIL_SERVER   = 'smtp.gmail.com'
+    MAIL_PORT     = 587
+    MAIL_USE_TLS  = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', os.environ.get('MAIL_USERNAME'))
+
 class DevelopmentConfig(Config):
     """Development configuration using Supabase/Local connection string."""
     DEBUG = True
