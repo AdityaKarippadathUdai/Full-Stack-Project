@@ -317,7 +317,15 @@ B.Tech CSE-AI
 Amrita University
 
 ---
+## Screenshots
+<img src="Screenshots\Signup.png">
+<img src="Screenshots\Login.png">
+<img src="Screenshots\Home.png">
+<img src="Screenshots\Books.png">
+<img src="Screenshots\Dashboard.png">
+<img src="Screenshots\Admin.png">
 
+---
 ## ⭐ Acknowledgements
 
 - Flask documentation
